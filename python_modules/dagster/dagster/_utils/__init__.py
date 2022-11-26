@@ -697,7 +697,6 @@ def traced(func: T_Callable) -> T_Callable:
 
     return cast(T_Callable, inner)
 
-
 def get_terminate_signal():
     if sys.platform == "win32":
         return signal.SIGTERM
