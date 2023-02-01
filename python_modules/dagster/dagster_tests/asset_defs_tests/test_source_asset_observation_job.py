@@ -1,5 +1,6 @@
 from typing import Optional
 
+import pytest
 from dagster._core.definitions.decorators.source_asset_decorator import observable_source_asset
 from dagster._core.definitions.definitions_class import Definitions
 from dagster._core.definitions.events import AssetKey
