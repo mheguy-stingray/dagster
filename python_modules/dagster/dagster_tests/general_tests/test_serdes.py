@@ -713,7 +713,7 @@ def test_whitelist_storage_name():
     wmap = WhitelistMap.create()
 
     @_whitelist_for_serdes(whitelist_map=wmap, storage_name="SerializedThing")
-    class Thing(NamedTuple):  # pylint: disable=unused-variable
+    class Thing(NamedTuple):
         name: str
 
     assert wmap.get_serialized_name("Thing") == "SerializedThing"

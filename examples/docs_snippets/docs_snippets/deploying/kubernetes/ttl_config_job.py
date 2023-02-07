@@ -4,7 +4,7 @@ from dagster import job, op
 
 @op
 def my_op():
-    print("foo")  # pylint: disable=print-call
+    print("foo")
 
 
 # fmt: off

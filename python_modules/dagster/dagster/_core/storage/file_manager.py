@@ -16,7 +16,6 @@ from dagster._utils import mkdir_p
 from .temp_file_manager import TempfileManager
 
 
-# pylint: disable=no-init
 class FileHandle(ABC):
     """A reference to a file as manipulated by a FileManager.
 
@@ -56,7 +55,7 @@ class LocalFileHandle(FileHandle):
         return self._path
 
 
-class FileManager(ABC):  # pylint: disable=no-init
+class FileManager(ABC):
     """Base class for all file managers in dagster.
 
     The file manager is an interface that can be implemented by resources to provide abstract

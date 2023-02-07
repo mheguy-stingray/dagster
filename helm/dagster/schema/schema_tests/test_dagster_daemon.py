@@ -144,7 +144,7 @@ def test_daemon_image(template: HelmTemplate):
 
 def test_queued_run_coordinator(
     instance_template: HelmTemplate,
-):  # pylint: disable=redefined-outer-name
+):
     helm_values = DagsterHelmValues.construct(
         dagsterDaemon=Daemon.construct(
             runCoordinator=RunCoordinator.construct(
@@ -175,7 +175,7 @@ def test_queued_run_coordinator(
 
 def test_queued_run_coordinator_unique_values(
     instance_template: HelmTemplate,
-):  # pylint: disable=redefined-outer-name
+):
     helm_values = DagsterHelmValues.construct(
         dagsterDaemon=Daemon.construct(
             runCoordinator=RunCoordinator.construct(
@@ -208,7 +208,7 @@ def test_queued_run_coordinator_unique_values(
 
 def test_run_monitoring_defaults(
     instance_template: HelmTemplate,
-):  # pylint: disable=redefined-outer-name
+):
     helm_values = DagsterHelmValues.construct()
 
     configmaps = instance_template.render(helm_values)
@@ -222,7 +222,7 @@ def test_run_monitoring_defaults(
 
 def test_run_monitoring(
     instance_template: HelmTemplate,
-):  # pylint: disable=redefined-outer-name
+):
     helm_values = DagsterHelmValues.construct(
         dagsterDaemon=Daemon.construct(runMonitoring={"enabled": True})
     )
@@ -240,7 +240,7 @@ def test_run_monitoring(
 
 def test_run_monitoring_no_max_resume_run_attempts(
     instance_template: HelmTemplate,
-):  # pylint: disable=redefined-outer-name
+):
     helm_values = DagsterHelmValues.construct(
         dagsterDaemon=Daemon.construct(runMonitoring={"enabled": True, "maxResumeRunAttempts": 0})
     )
@@ -257,7 +257,7 @@ def test_run_monitoring_no_max_resume_run_attempts(
 
 def test_run_monitoring_set_max_resume_run_attempts(
     instance_template: HelmTemplate,
-):  # pylint: disable=redefined-outer-name
+):
     helm_values = DagsterHelmValues.construct(
         dagsterDaemon=Daemon.construct(runMonitoring={"enabled": True, "maxResumeRunAttempts": 2})
     )
@@ -274,7 +274,7 @@ def test_run_monitoring_set_max_resume_run_attempts(
 
 def test_run_retries(
     instance_template: HelmTemplate,
-):  # pylint: disable=redefined-outer-name
+):
     helm_values = DagsterHelmValues.construct(
         dagsterDaemon=Daemon.construct(runRetries={"enabled": True})
     )

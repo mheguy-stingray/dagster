@@ -227,7 +227,7 @@ def test_basic_int_and_string_json_materialization():
     pipeline = multiple_output_pipeline()
 
     with get_temp_file_names(2) as file_tuple:
-        filename_one, filename_two = file_tuple  # pylint: disable=E0632
+        filename_one, filename_two = file_tuple
         result = execute_pipeline(
             pipeline,
             {
@@ -263,7 +263,7 @@ def test_basic_int_and_string_json_multiple_materialization():
 
     with get_temp_file_names(4) as file_tuple:
         # False positive for unbalanced tuple unpacking
-        # pylint: disable=E0632
+
         filename_one, filename_two, filename_three, filename_four = file_tuple
         result = execute_pipeline(
             pipeline,
@@ -313,7 +313,7 @@ def test_basic_int_json_multiple_materializations():
     pipeline = single_int_output_pipeline()
 
     with get_temp_file_names(2) as file_tuple:
-        filename_one, filename_two = file_tuple  # pylint: disable=E0632
+        filename_one, filename_two = file_tuple
         result = execute_pipeline(
             pipeline,
             {

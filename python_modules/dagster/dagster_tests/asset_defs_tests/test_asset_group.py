@@ -174,10 +174,7 @@ def test_asset_group_with_executor():
         return [AssetGroup([the_asset], executor_def=in_process_executor)]
 
     asset_group_underlying_job = the_repo.get_all_jobs()[0]
-    assert (
-        asset_group_underlying_job.executor_def  # pylint: disable=comparison-with-callable
-        == in_process_executor
-    )
+    assert asset_group_underlying_job.executor_def == in_process_executor
 
 
 def test_asset_group_requires_root_manager():
@@ -209,9 +206,7 @@ def test_resource_override():
         return [AssetGroup([single_asset], resource_defs={"io_manager": mem_io_manager})]
 
     asset_group_underlying_job = the_repo.get_all_jobs()[0]
-    assert (  # pylint: disable=comparison-with-callable
-        asset_group_underlying_job.resource_defs["io_manager"] == mem_io_manager
-    )
+    assert asset_group_underlying_job.resource_defs["io_manager"] == mem_io_manager
 
 
 def asset_aware_io_manager():
@@ -1002,7 +997,7 @@ def test_job_with_reserved_name():
     ):
 
         @repository
-        def the_repo():  # pylint: disable=unused-variable
+        def the_repo():
             return [the_job]
 
 

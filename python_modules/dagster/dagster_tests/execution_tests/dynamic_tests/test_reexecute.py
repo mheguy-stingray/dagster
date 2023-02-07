@@ -46,7 +46,6 @@ def emit(_):
 
 @job(executor_def=in_process_executor)
 def dynamic_pipeline():
-    # pylint: disable=no-member
     emit().map(lambda n: multiply_by_two(multiply_inputs(n, emit_ten())))
 
 

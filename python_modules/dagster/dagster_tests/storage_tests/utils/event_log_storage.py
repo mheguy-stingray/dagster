@@ -364,7 +364,7 @@ class TestEventLogStorage:
         __test__ = True
 
         @pytest.fixture(scope='function', name='storage')
-        def event_log_storage(self):  # pylint: disable=arguments-differ
+        def event_log_storage(self):
             return MyStorageImplementation()
     ```
     """

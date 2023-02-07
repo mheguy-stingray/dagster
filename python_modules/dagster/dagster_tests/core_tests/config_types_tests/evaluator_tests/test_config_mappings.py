@@ -810,7 +810,7 @@ def test_empty_config():
             config_schema={},
         )
     )
-    def wrap_solid():  # pylint: disable=unused-variable
+    def wrap_solid():
         return scalar_config_solid()
 
     @pipeline
@@ -831,7 +831,7 @@ def test_nested_empty_config():
             config_schema={},
         )
     )
-    def wrap_solid():  # pylint: disable=unused-variable
+    def wrap_solid():
         return scalar_config_solid()
 
     @graph
@@ -860,7 +860,7 @@ def test_nested_empty_config_input():
             config_schema={},
         )
     )
-    def wrap_solid():  # pylint: disable=unused-variable
+    def wrap_solid():
         return number()
 
     @graph

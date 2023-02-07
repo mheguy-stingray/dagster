@@ -15,7 +15,7 @@ IS_BUILDKITE = os.getenv("BUILDKITE") is not None
 
 
 @pytest.fixture(scope="session")
-def rabbitmq():  # pylint: disable=redefined-outer-name
+def rabbitmq():
     if IS_BUILDKITE:
         # Set the enviornment variable that celery uses in the start_worker() test function
         # to find the broker host
@@ -67,7 +67,7 @@ def tempdir():
 
 
 @pytest.fixture(scope="function")
-def instance(tempdir):  # pylint: disable=redefined-outer-name
+def instance(tempdir):
     with instance_for_test(temp_dir=tempdir) as test_instance:
         yield test_instance
 

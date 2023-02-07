@@ -81,7 +81,7 @@ class SnowflakePandasTypeHandler(DbTypeHandler[pd.DataFrame]):
     def handle_output(
         self, context: OutputContext, table_slice: TableSlice, obj: pd.DataFrame
     ) -> Mapping[str, RawMetadataValue]:
-        from snowflake import connector  # pylint: disable=no-name-in-module
+        from snowflake import connector
 
         connector.paramstyle = "pyformat"
         with _connect_snowflake(context, table_slice) as con:

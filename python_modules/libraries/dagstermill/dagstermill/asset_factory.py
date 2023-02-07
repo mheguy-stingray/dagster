@@ -94,7 +94,7 @@ def _dm_compute(
                         "Error when attempting to materialize executed notebook:"
                         f" {serializable_error_info_from_exc_info(sys.exc_info())}"
                     )
-                    # pylint: disable=no-member
+
                     # compat:
                     if isinstance(ex, ExecutionError) and (
                         ex.ename == "RetryRequested" or ex.ename == "Failure"

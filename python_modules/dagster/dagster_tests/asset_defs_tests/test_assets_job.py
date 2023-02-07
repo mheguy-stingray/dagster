@@ -908,7 +908,7 @@ def test_basic_graph():
     def thing():
         da = get_string()
         db = get_string()
-        o1, o2 = combine_strings_and_split(da, db)  # pylint: disable=unused-variable
+        o1, o2 = combine_strings_and_split(da, db)
         return o1
 
     @asset
@@ -997,7 +997,7 @@ def test_nested_graph():
     def thing():
         da = inside_thing()
         db = get_string()
-        o1, o2 = combine_strings_and_split(da, db)  # pylint: disable=unused-variable
+        o1, o2 = combine_strings_and_split(da, db)
         return o1
 
     thing_asset = AssetsDefinition(

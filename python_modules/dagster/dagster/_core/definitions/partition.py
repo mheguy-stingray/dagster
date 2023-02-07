@@ -330,7 +330,7 @@ def raise_error_on_invalid_partition_key_substring(partition_keys: Sequence[str]
 
 class StaticPartitionsDefinition(
     PartitionsDefinition[str],
-):  # pylint: disable=unsubscriptable-object
+):
     def __init__(self, partition_keys: Sequence[str]):
         check.sequence_param(partition_keys, "partition_keys", of_type=str)
 
@@ -358,7 +358,7 @@ class StaticPartitionsDefinition(
 
 
 class ScheduleTimeBasedPartitionsDefinition(
-    PartitionsDefinition[datetime],  # pylint: disable=unsubscriptable-object
+    PartitionsDefinition[datetime],
     NamedTuple(
         "_ScheduleTimeBasedPartitionsDefinition",
         [
@@ -375,7 +375,7 @@ class ScheduleTimeBasedPartitionsDefinition(
 ):
     """Computes the partitions backwards from the scheduled execution times."""
 
-    def __new__(  # pylint: disable=arguments-differ
+    def __new__(
         cls,
         schedule_type: ScheduleType,
         start: datetime,
@@ -538,7 +538,7 @@ class DynamicPartitionsDefinition(
 
     """
 
-    def __new__(  # pylint: disable=arguments-differ
+    def __new__(
         cls,
         partition_fn: Optional[
             Callable[[Optional[datetime]], Union[Sequence[Partition], Sequence[str]]]
@@ -695,9 +695,7 @@ class PartitionSetDefinition(Generic[T]):
         tags_fn_for_partition: Callable[
             [Partition[T]], Optional[Mapping[str, str]]
         ] = lambda _partition: {},
-        partitions_def: Optional[
-            PartitionsDefinition[T]  # pylint: disable=unsubscriptable-object
-        ] = None,
+        partitions_def: Optional[PartitionsDefinition[T]] = None,
         job_name: Optional[str] = None,
     ):
         check.invariant(
@@ -1055,7 +1053,7 @@ class PartitionedConfig(Generic[T]):
 
     def __init__(
         self,
-        partitions_def: PartitionsDefinition[T],  # pylint: disable=unsubscriptable-object
+        partitions_def: PartitionsDefinition[T],
         run_config_for_partition_fn: Callable[[Partition[T]], Mapping[str, Any]],
         decorated_fn: Optional[Callable[..., Mapping[str, Any]]] = None,
         tags_for_partition_fn: Optional[Callable[[Partition[T]], Mapping[str, str]]] = None,
@@ -1071,7 +1069,7 @@ class PartitionedConfig(Generic[T]):
 
     @public
     @property
-    def partitions_def(self) -> PartitionsDefinition[T]:  # pylint: disable=unsubscriptable-object
+    def partitions_def(self) -> PartitionsDefinition[T]:
         return self._partitions
 
     @public

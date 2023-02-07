@@ -630,7 +630,7 @@ def bar_logger(init_context):
             self.prefix = prefix
             super(BarLogger, self).__init__(name, *args, **kwargs)
 
-        def log(self, lvl, msg, *args, **kwargs):  # pylint: disable=arguments-differ
+        def log(self, lvl, msg, *args, **kwargs):
             msg = self.prefix + msg
             super(BarLogger, self).log(lvl, msg, *args, **kwargs)
 
@@ -1010,7 +1010,6 @@ def dynamic_pipeline():
     def sum_numbers(_, nums):
         return sum(nums)
 
-    # pylint: disable=no-member
     multiply_by_two.alias("double_total")(
         sum_numbers(
             emit()
@@ -1569,7 +1568,7 @@ def asset_one():
 
 
 @asset
-def asset_two(asset_one):  # pylint: disable=redefined-outer-name
+def asset_two(asset_one):
     return asset_one + 1
 
 
@@ -1587,7 +1586,7 @@ def upstream_static_partitioned_asset():
 @asset(partitions_def=static_partitions_def)
 def downstream_static_partitioned_asset(
     upstream_static_partitioned_asset,
-):  # pylint: disable=redefined-outer-name
+):
     assert upstream_static_partitioned_asset
 
 
@@ -1605,7 +1604,7 @@ def upstream_dynamic_partitioned_asset():
 @asset(partitions_def=DynamicPartitionsDefinition(name="foo"))
 def downstream_dynamic_partitioned_asset(
     upstream_dynamic_partitioned_asset,
-):  # pylint: disable=redefined-outer-name
+):
     assert upstream_dynamic_partitioned_asset
 
 
@@ -1646,7 +1645,7 @@ def upstream_time_partitioned_asset():
 @asset(partitions_def=hourly_partition)
 def downstream_time_partitioned_asset(
     upstream_time_partitioned_asset,
-):  # pylint: disable=redefined-outer-name
+):
     return upstream_time_partitioned_asset + 1
 
 

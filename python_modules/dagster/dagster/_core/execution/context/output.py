@@ -156,7 +156,7 @@ class OutputContext:
             self._resources_cm = build_resources(
                 check.opt_mapping_param(resources, "resources", key_type=str)
             )
-            self._resources = self._resources_cm.__enter__()  # pylint: disable=no-member
+            self._resources = self._resources_cm.__enter__()
             self._resources_contain_cm = isinstance(self._resources, IContainsGenerator)
             self._cm_scope_entered = False
 
@@ -171,7 +171,7 @@ class OutputContext:
 
     def __exit__(self, *exc):
         if self._resources_cm:
-            self._resources_cm.__exit__(*exc)  # pylint: disable=no-member
+            self._resources_cm.__exit__(*exc)
 
     def __del__(self):
         if (
@@ -180,7 +180,7 @@ class OutputContext:
             and self._resources_contain_cm
             and not self._cm_scope_entered
         ):
-            self._resources_cm.__exit__(None, None, None)  # pylint: disable=no-member
+            self._resources_cm.__exit__(None, None, None)
 
     @public
     @property

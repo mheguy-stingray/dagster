@@ -1130,7 +1130,7 @@ def test_multi_dep_optional():
     @solid(output_defs=[OutputDefinition(name="skip", is_required=False)])
     def skip(_):
         return
-        yield  # pylint: disable=unreachable
+        yield
 
     @solid
     def collect(_, items):

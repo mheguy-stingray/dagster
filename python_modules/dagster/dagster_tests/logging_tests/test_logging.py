@@ -102,7 +102,7 @@ def test_logging_custom_log_levels():
             pipeline_run=DagsterRun(pipeline_name="system", run_id="123"),
         )
         with pytest.raises(AttributeError):
-            dl.foo("test")  # pylint: disable=no-member
+            dl.foo("test")
 
 
 def test_logging_integer_log_levels():
@@ -111,7 +111,7 @@ def test_logging_integer_log_levels():
             loggers=[logger],
             pipeline_run=DagsterRun(pipeline_name="system", run_id="123"),
         )
-        dl.log(3, "test")  # pylint: disable=no-member
+        dl.log(3, "test")
 
 
 def test_logging_bad_custom_log_levels():

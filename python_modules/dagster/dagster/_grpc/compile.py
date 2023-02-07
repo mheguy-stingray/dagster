@@ -101,11 +101,7 @@ def protoc(generated_dir: str):
                 for line in generated.readlines():
                     rewritten.write(line)
 
-    installed_pkgs = {
-        # pylint: disable=not-an-iterable
-        pkg.key
-        for pkg in pkg_resources.working_set
-    }
+    installed_pkgs = {pkg.key for pkg in pkg_resources.working_set}
 
     # Run black if it's available. This is under a conditional because black may not be available in
     # a test environment.

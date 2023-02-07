@@ -208,7 +208,6 @@ def get_the_db_connection(_):
     ...
 
 
-# pylint: disable=unused-variable,reimported
 # start_build_resources_example
 from dagster import resource, build_resources, sensor
 

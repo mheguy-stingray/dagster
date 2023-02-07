@@ -500,10 +500,10 @@ class DagsterGrpcClient:
                 )
         except grpc.RpcError as e:
             print(e)  # pylint: disable=print-call
-            return health_pb2.HealthCheckResponse.UNKNOWN  # pylint: disable=no-member
+            return health_pb2.HealthCheckResponse.UNKNOWN
 
         status_number = response.status
-        # pylint: disable=no-member
+
         return health_pb2.HealthCheckResponse.ServingStatus.Name(status_number)
 
 

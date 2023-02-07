@@ -51,7 +51,7 @@ class TimeWindow(NamedTuple):
 
 
 class TimeWindowPartitionsDefinition(
-    PartitionsDefinition[TimeWindow],  # pylint: disable=unsubscriptable-object
+    PartitionsDefinition[TimeWindow],
     NamedTuple(
         "_TimeWindowPartitionsDefinition",
         [
@@ -91,7 +91,7 @@ class TimeWindowPartitionsDefinition(
             and so on.
     """
 
-    def __new__(  # pylint: disable=arguments-differ
+    def __new__(
         cls,
         start: Union[datetime, str],
         fmt: str,
@@ -652,7 +652,7 @@ class TimeWindowPartitionsDefinition(
 
 
 class DailyPartitionsDefinition(TimeWindowPartitionsDefinition):
-    def __new__(  # pylint: disable=signature-differs
+    def __new__(
         cls,
         start_date: Union[datetime, str],
         minute_offset: int = 0,
@@ -787,7 +787,7 @@ def daily_partitioned_config(
 
 
 class HourlyPartitionsDefinition(TimeWindowPartitionsDefinition):
-    def __new__(  # pylint: disable=signature-differs
+    def __new__(
         cls,
         start_date: Union[datetime, str],
         minute_offset: int = 0,
@@ -906,7 +906,7 @@ def hourly_partitioned_config(
 
 
 class MonthlyPartitionsDefinition(TimeWindowPartitionsDefinition):
-    def __new__(  # pylint: disable=signature-differs
+    def __new__(
         cls,
         start_date: Union[datetime, str],
         minute_offset: int = 0,
@@ -1041,7 +1041,7 @@ def monthly_partitioned_config(
 
 
 class WeeklyPartitionsDefinition(TimeWindowPartitionsDefinition):
-    def __new__(  # pylint: disable=signature-differs
+    def __new__(
         cls,
         start_date: Union[datetime, str],
         minute_offset: int = 0,

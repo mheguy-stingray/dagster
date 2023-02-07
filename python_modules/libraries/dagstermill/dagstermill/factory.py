@@ -218,7 +218,7 @@ def _dm_compute(
                             exc=str(serializable_error_info_from_exc_info(sys.exc_info()))
                         )
                     )
-                    # pylint: disable=no-member
+
                     # compat:
                     if isinstance(ex, ExecutionError) and (
                         ex.ename == "RetryRequested" or ex.ename == "Failure"

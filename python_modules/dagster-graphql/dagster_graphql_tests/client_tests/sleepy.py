@@ -1,5 +1,3 @@
-# pylint:disable=no-member
-
 from time import sleep
 
 from dagster import Field, Int, List, Output

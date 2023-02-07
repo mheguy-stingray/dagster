@@ -214,7 +214,7 @@ class UnboundHookContext(HookContext):
         # Open resource context manager
         self._resource_defs = wrap_resources_for_execution(resources)
         self._resources_cm = build_resources(self._resource_defs)
-        self._resources = self._resources_cm.__enter__()  # pylint: disable=no-member
+        self._resources = self._resources_cm.__enter__()
         self._resources_contain_cm = isinstance(self._resources, IContainsGenerator)
 
         self._run_id = run_id
@@ -230,11 +230,11 @@ class UnboundHookContext(HookContext):
         return self
 
     def __exit__(self, *exc):
-        self._resources_cm.__exit__(*exc)  # pylint: disable=no-member
+        self._resources_cm.__exit__(*exc)
 
     def __del__(self):
         if self._resources_contain_cm and not self._cm_scope_entered:
-            self._resources_cm.__exit__(None, None, None)  # pylint: disable=no-member
+            self._resources_cm.__exit__(None, None, None)
 
     @property
     def job_name(self) -> str:

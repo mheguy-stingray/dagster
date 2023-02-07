@@ -290,7 +290,7 @@ def pipeline_run_from_storage(
             "Found unhandled arguments from stored PipelineRun: {args}".format(args=kwargs.keys())
         )
 
-    return DagsterRun(  # pylint: disable=redundant-keyword-arg
+    return DagsterRun(
         pipeline_name=pipeline_name,
         run_id=run_id,
         run_config=run_config,
