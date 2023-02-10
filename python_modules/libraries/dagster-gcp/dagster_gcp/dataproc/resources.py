@@ -70,7 +70,7 @@ class DataprocResource:
             cluster = self.get_cluster()
             return cluster["status"]["state"] in {"RUNNING", "UPDATING"}
 
-        done = DataprocResource._iter_and_sleep_until_ready(iter_fn)
+        done = DataprocResource._iter_and_sleep_until_ready(iter_fn)  # noqa: SLF001
         if not done:
             cluster = self.get_cluster()
             raise DataprocError(
@@ -114,7 +114,9 @@ class DataprocResource:
 
             return False
 
-        done = DataprocResource._iter_and_sleep_until_ready(iter_fn, max_wait_time_sec=wait_timeout)
+        done = DataprocResource._iter_and_sleep_until_ready(  # noqa: SLF001
+            iter_fn, max_wait_time_sec=wait_timeout
+        )
         if not done:
             job = self.get_job(job_id)
             raise DataprocError("Job run timed out: %s" % str(job["status"]))

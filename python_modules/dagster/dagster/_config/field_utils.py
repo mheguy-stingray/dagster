@@ -63,7 +63,7 @@ def _memoize_inst_in_field_cache(passed_cls, defined_cls, key):
         return FIELD_HASH_CACHE[key]
 
     defined_cls_inst = super(defined_cls, passed_cls).__new__(defined_cls)
-    defined_cls_inst._initialized = False  # pylint: disable=protected-access
+    defined_cls_inst._initialized = False  # noqa: SLF001
     FIELD_HASH_CACHE[key] = defined_cls_inst
     return defined_cls_inst
 

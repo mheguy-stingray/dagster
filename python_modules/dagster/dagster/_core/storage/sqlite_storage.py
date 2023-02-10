@@ -76,11 +76,11 @@ class DagsterSqliteStorage(DagsterStorage, ConfigurableClass):
         return cls(base_dir, inst_data=inst_data)
 
     def register_instance(self, instance):
-        if not self._run_storage._instance:  # pylint: disable=protected-access
+        if not self._run_storage._instance:  # noqa: SLF001
             self._run_storage.register_instance(instance)
-        if not self._event_log_storage._instance:  # pylint: disable=protected-access
+        if not self._event_log_storage._instance:  # noqa: SLF001
             self._event_log_storage.register_instance(instance)
-        if not self._schedule_storage._instance:  # pylint: disable=protected-access
+        if not self._schedule_storage._instance:  # noqa: SLF001
             self._schedule_storage.register_instance(instance)
 
     @property

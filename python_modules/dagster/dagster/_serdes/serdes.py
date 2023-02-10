@@ -320,7 +320,7 @@ class DefaultNamedTupleSerializer(NamedTupleSerializer):
         skip_when_empty_fields = cls.skip_when_empty()
 
         base_dict = {}
-        for key, inner_value in value._asdict().items():
+        for key, inner_value in value._asdict().items():  # noqa: SLF001
             if key in skip_when_empty_fields and inner_value in EMPTY_VALUES_TO_SKIP:
                 continue
             base_dict[key] = pack_inner_value(inner_value, whitelist_map, f"{descent_path}.{key}")
@@ -633,7 +633,7 @@ def _check_serdes_tuple_class_invariants(klass, sig_params):
 
     value_params = dunder_new_params[1:]
 
-    for index, field in enumerate(klass._fields):
+    for index, field in enumerate(klass._fields):  # noqa: SLF001
         if index >= len(value_params):
             error_msg = (
                 "Missing parameters to __new__. You have declared fields "
@@ -641,7 +641,9 @@ def _check_serdes_tuple_class_invariants(klass, sig_params):
                 "to the __new__ method. In order for "
                 "both serdes serialization and pickling to work, "
                 "these must match. Missing: {missing_fields}"
-            ).format(missing_fields=repr(list(klass._fields[index:])))
+            ).format(
+                missing_fields=repr(list(klass._fields[index:]))  # noqa: SLF001
+            )
 
             raise SerdesUsageError(_with_header(error_msg))
 
@@ -654,9 +656,9 @@ def _check_serdes_tuple_class_invariants(klass, sig_params):
             ).format(one_based_index=index + 1, field_name=field, param_name=value_param.name)
             raise SerdesUsageError(_with_header(error_msg))
 
-    if len(value_params) > len(klass._fields):
+    if len(value_params) > len(klass._fields):  # noqa: SLF001
         # Ensure that remaining parameters have default values
-        for extra_param_index in range(len(klass._fields), len(value_params) - 1):
+        for extra_param_index in range(len(klass._fields), len(value_params) - 1):  # noqa: SLF001
             if value_params[extra_param_index].default == Parameter.empty:
                 error_msg = (
                     'Parameter "{param_name}" is a parameter to the __new__ '

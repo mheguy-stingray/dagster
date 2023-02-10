@@ -100,10 +100,7 @@ class AssetGraph:
             elif isinstance(asset, AssetsDefinition):
                 assets_defs.append(asset)
                 partition_mappings_by_key.update(
-                    {
-                        key: asset._partition_mappings  # pylint: disable=protected-access
-                        for key in asset.keys
-                    }
+                    {key: asset._partition_mappings for key in asset.keys}  # noqa: SLF001
                 )
                 partitions_defs_by_key.update({key: asset.partitions_def for key in asset.keys})
                 group_names_by_key.update(asset.group_names_by_key)

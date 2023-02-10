@@ -707,14 +707,16 @@ def test_schedule_with_different_origin(instance, workspace_context, external_re
     existing_origin = external_schedule.get_external_origin()
 
     repo_location_origin = existing_origin.external_repository_origin.repository_location_origin
-    modified_loadable_target_origin = repo_location_origin.loadable_target_origin._replace(
-        executable_path="/different/executable_path"
+    modified_loadable_target_origin = (
+        repo_location_origin.loadable_target_origin._replace(  # noqa: SLF001
+            executable_path="/different/executable_path"
+        )
     )
 
     # Change metadata on the origin that shouldn't matter for execution
-    modified_origin = existing_origin._replace(
-        external_repository_origin=existing_origin.external_repository_origin._replace(
-            repository_location_origin=repo_location_origin._replace(
+    modified_origin = existing_origin._replace(  # noqa: SLF001
+        external_repository_origin=existing_origin.external_repository_origin._replace(  # noqa: SLF001
+            repository_location_origin=repo_location_origin._replace(  # noqa: SLF001
                 loadable_target_origin=modified_loadable_target_origin
             )
         )
@@ -1461,7 +1463,7 @@ def test_load_repository_location_not_in_workspace(
         # Swap out a new location name
         invalid_repo_origin = ExternalInstigatorOrigin(
             ExternalRepositoryOrigin(
-                valid_schedule_origin.external_repository_origin.repository_location_origin._replace(
+                valid_schedule_origin.external_repository_origin.repository_location_origin._replace(  # noqa: SLF001
                     location_name="missing_location"
                 ),
                 valid_schedule_origin.external_repository_origin.repository_name,
@@ -2232,10 +2234,11 @@ def test_status_in_code_schedule(instance, executor):
         # Now try with an error workspace - the job state should not be deleted
         # since its associated with an errored out location
         with pendulum.test(freeze_datetime):
-            # pylint: disable=protected-access
-            workspace_context._location_entry_dict[
+            workspace_context._location_entry_dict[  # noqa: SLF001
                 "test_location"
-            ] = workspace_context._location_entry_dict["test_location"]._replace(
+            ] = workspace_context._location_entry_dict[  # noqa: SLF001
+                "test_location"
+            ]._replace(
                 repository_location=None,
                 load_error=SerializableErrorInfo("error", [], "error"),
             )

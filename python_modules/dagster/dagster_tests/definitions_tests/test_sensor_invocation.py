@@ -682,9 +682,7 @@ def test_multi_asset_sensor_update_cursor_no_overwrite():
             context.advance_cursor({august_asset.key: materialization})
 
             assert (
-                context._get_cursor(  # pylint: disable=protected-access
-                    july_asset.key
-                ).latest_consumed_event_partition
+                context._get_cursor(july_asset.key).latest_consumed_event_partition  # noqa: SLF001
                 == "2022-07-10"
             )
 
@@ -803,7 +801,7 @@ def test_multi_asset_sensor_unconsumed_events():
             monitored_assets=[july_asset.key], instance=instance, repository_def=my_repo
         )
         test_unconsumed_events_sensor(ctx)
-        july_asset_cursor = ctx._get_cursor(july_asset.key)  # pylint: disable=protected-access
+        july_asset_cursor = ctx._get_cursor(july_asset.key)  # noqa: SLF001
         assert first_2022_07_10_mat < july_asset_cursor.latest_consumed_event_id
         assert july_asset_cursor.latest_consumed_event_partition == "2022-07-10"
         # Second materialization for 2022-07-10 is after cursor so should not be unconsumed
@@ -816,7 +814,7 @@ def test_multi_asset_sensor_unconsumed_events():
         # no longer show up in the cursor. The storage ID of the cursor should stay the same.
         invocation_num += 1
         test_unconsumed_events_sensor(ctx)
-        second_july_cursor = ctx._get_cursor(july_asset.key)  # pylint: disable=protected-access
+        second_july_cursor = ctx._get_cursor(july_asset.key)  # noqa: SLF001
         assert second_july_cursor.latest_consumed_event_partition == "2022-07-10"
         assert (
             second_july_cursor.latest_consumed_event_id
@@ -860,7 +858,7 @@ def test_advance_all_cursors_clears_unconsumed_events():
             monitored_assets=[july_asset.key], instance=instance, repository_def=my_repo
         )
         test_unconsumed_events_sensor(ctx)
-        july_asset_cursor = ctx._get_cursor(july_asset.key)  # pylint: disable=protected-access
+        july_asset_cursor = ctx._get_cursor(july_asset.key)  # noqa: SLF001
         first_storage_id = july_asset_cursor.latest_consumed_event_id
         assert first_storage_id
         assert july_asset_cursor.latest_consumed_event_partition == "2022-07-10"
@@ -876,7 +874,7 @@ def test_advance_all_cursors_clears_unconsumed_events():
             instance=instance,
         )
         test_unconsumed_events_sensor(ctx)
-        july_asset_cursor = ctx._get_cursor(july_asset.key)  # pylint: disable=protected-access
+        july_asset_cursor = ctx._get_cursor(july_asset.key)  # noqa: SLF001
         assert july_asset_cursor.latest_consumed_event_partition == "2022-07-06"
         assert july_asset_cursor.trailing_unconsumed_partitioned_event_ids == {}
         assert july_asset_cursor.latest_consumed_event_id > first_storage_id
@@ -903,7 +901,7 @@ def test_error_when_max_num_unconsumed_events():
             monitored_assets=[july_asset.key], instance=instance, repository_def=my_repo
         )
         test_unconsumed_events_sensor(ctx)
-        july_asset_cursor = ctx._get_cursor(july_asset.key)  # pylint: disable=protected-access
+        july_asset_cursor = ctx._get_cursor(july_asset.key)  # noqa: SLF001
         assert july_asset_cursor.latest_consumed_event_id
         assert july_asset_cursor.latest_consumed_event_partition == "2022-07-25"
         assert len(july_asset_cursor.trailing_unconsumed_partitioned_event_ids) == 24
@@ -962,7 +960,7 @@ def test_latest_materialization_records_by_partition_fetches_unconsumed_events()
             monitored_assets=[july_asset.key], instance=instance, repository_def=my_repo
         )
         test_unconsumed_events_sensor(ctx)
-        first_july_cursor = ctx._get_cursor(july_asset.key)  # pylint: disable=protected-access
+        first_july_cursor = ctx._get_cursor(july_asset.key)  # noqa: SLF001
         assert first_july_cursor.latest_consumed_event_id
         assert first_july_cursor.latest_consumed_event_partition == "2022-07-03"
         assert len(first_july_cursor.trailing_unconsumed_partitioned_event_ids) == 2
@@ -975,7 +973,7 @@ def test_latest_materialization_records_by_partition_fetches_unconsumed_events()
                 instance=instance,
             )
         test_unconsumed_events_sensor(ctx)
-        second_july_cursor = ctx._get_cursor(july_asset.key)  # pylint: disable=protected-access
+        second_july_cursor = ctx._get_cursor(july_asset.key)  # noqa: SLF001
         assert second_july_cursor.latest_consumed_event_partition == "2022-07-02"
         assert (
             second_july_cursor.latest_consumed_event_id > first_july_cursor.latest_consumed_event_id
@@ -1012,7 +1010,7 @@ def test_unfetched_partitioned_events_are_unconsumed():
             monitored_assets=[july_asset.key], instance=instance, repository_def=my_repo
         )
         test_unconsumed_events_sensor(ctx)
-        first_july_cursor = ctx._get_cursor(july_asset.key)  # pylint: disable=protected-access
+        first_july_cursor = ctx._get_cursor(july_asset.key)  # noqa: SLF001
         assert first_july_cursor.latest_consumed_event_id
         assert first_july_cursor.latest_consumed_event_partition == "2022-07-05"
 
@@ -1044,7 +1042,7 @@ def test_unfetched_partitioned_events_are_unconsumed():
             monitored_assets=[july_asset.key], instance=instance, repository_def=my_repo
         )
         test_unconsumed_events_sensor(ctx)
-        second_july_cursor = ctx._get_cursor(july_asset.key)  # pylint: disable=protected-access
+        second_july_cursor = ctx._get_cursor(july_asset.key)  # noqa: SLF001
         assert (
             second_july_cursor.latest_consumed_event_id > first_july_cursor.latest_consumed_event_id
         )
@@ -1062,7 +1060,7 @@ def test_build_multi_asset_sensor_context_asset_selection_set_to_latest_material
 
     @multi_asset_sensor(monitored_assets=[my_asset.key])
     def my_sensor(context):
-        my_asset_cursor = context._get_cursor(my_asset.key)  # pylint: disable=protected-access
+        my_asset_cursor = context._get_cursor(my_asset.key)  # noqa: SLF001
         assert my_asset_cursor.latest_consumed_event_id is not None
 
     @repository
@@ -1083,9 +1081,7 @@ def test_build_multi_asset_sensor_context_asset_selection_set_to_latest_material
             repository_def=my_repo,
         )
         assert (
-            ctx._get_cursor(  # pylint: disable=protected-access
-                my_asset.key
-            ).latest_consumed_event_id
+            ctx._get_cursor(my_asset.key).latest_consumed_event_id  # noqa: SLF001
             == records.storage_id
         )
         my_sensor(ctx)
@@ -1130,9 +1126,7 @@ def test_build_multi_asset_sensor_context_set_to_latest_materializations():
             repository_def=my_repo,
         )
         assert (
-            ctx._get_cursor(  # pylint: disable=protected-access
-                my_asset.key
-            ).latest_consumed_event_id
+            ctx._get_cursor(my_asset.key).latest_consumed_event_id  # noqa: SLF001
             == records.storage_id
         )
         my_sensor(ctx)
@@ -1179,15 +1173,11 @@ def test_build_multi_asset_context_set_after_multiple_materializations():
             repository_def=my_repo,
         )
         assert (
-            ctx._get_cursor(  # pylint: disable=protected-access
-                my_asset.key
-            ).latest_consumed_event_id
+            ctx._get_cursor(my_asset.key).latest_consumed_event_id  # noqa: SLF001
             == my_asset_cursor
         )
         assert (
-            ctx._get_cursor(  # pylint: disable=protected-access
-                my_asset_2.key
-            ).latest_consumed_event_id
+            ctx._get_cursor(my_asset_2.key).latest_consumed_event_id  # noqa: SLF001
             == my_asset_2_cursor
         )
 

@@ -78,7 +78,7 @@ def test_with_ancestor():
 
 def test_dict_roundtrip():
     handle = NodeHandle("baz", NodeHandle("bar", NodeHandle("foo", None)))
-    assert NodeHandle.from_dict(json.loads(json.dumps(handle._asdict()))) == handle
+    assert NodeHandle.from_dict(json.loads(json.dumps(handle._asdict()))) == handle  # noqa: SLF001
 
     handle = NodeHandle("foo", None)
-    assert NodeHandle.from_dict(json.loads(json.dumps(handle._asdict()))) == handle
+    assert NodeHandle.from_dict(json.loads(json.dumps(handle._asdict()))) == handle  # noqa: SLF001

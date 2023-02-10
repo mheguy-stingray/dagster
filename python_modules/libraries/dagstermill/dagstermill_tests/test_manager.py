@@ -58,7 +58,7 @@ def in_job_manager(
             with safe_tempfile_path() as output_log_file_path:
                 context_dict = {
                     "pipeline_run_dict": pipeline_run_dict,
-                    "solid_handle_kwargs": solid_handle._asdict(),
+                    "solid_handle_kwargs": solid_handle._asdict(),  # noqa: SLF001
                     "executable_dict": executable_dict,
                     "marshal_dir": marshal_dir,
                     "run_config": {},
@@ -148,8 +148,8 @@ def test_out_of_job_yield_event():
 
 def test_in_job_manager_resources():
     with in_job_manager() as manager:
-        assert "output_notebook_io_manager" in manager.context.resources._asdict()
-        assert len(manager.context.resources._asdict()) == 1
+        assert "output_notebook_io_manager" in manager.context.resources._asdict()  # noqa: SLF001
+        assert len(manager.context.resources._asdict()) == 1  # noqa: SLF001
 
 
 def test_in_job_manager_solid_config():
@@ -219,7 +219,7 @@ def test_in_job_manager_with_resources():
             run_config={"resources": {"list": {"config": path}}},
             step_key="hello_world_resource",
         ) as manager:
-            assert "list" in manager.context.resources._asdict()
+            assert "list" in manager.context.resources._asdict()  # noqa: SLF001
 
             with open(path, "rb") as fd:
                 messages = pickle.load(fd)

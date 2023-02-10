@@ -1,5 +1,3 @@
-# pylint: disable=protected-access
-
 import os
 import re
 import subprocess
@@ -29,15 +27,21 @@ from sqlalchemy import inspect
 
 
 def get_columns(instance, table_name: str):
-    return set(c["name"] for c in inspect(instance.run_storage._engine).get_columns(table_name))
+    return set(
+        c["name"]
+        for c in inspect(instance.run_storage._engine).get_columns(table_name)  # noqa: SLF001
+    )
 
 
 def get_indexes(instance, table_name: str):
-    return set(c["name"] for c in inspect(instance.run_storage._engine).get_indexes(table_name))
+    return set(
+        c["name"]
+        for c in inspect(instance.run_storage._engine).get_indexes(table_name)  # noqa: SLF001
+    )
 
 
 def get_tables(instance):
-    return instance.run_storage._engine.table_names()
+    return instance.run_storage._engine.table_names()  # noqa: SLF001
 
 
 def test_0_7_6_postgres_pre_add_pipeline_snapshot(hostname, conn_string):
@@ -246,7 +250,7 @@ def test_0_11_0_add_asset_details(hostname, conn_string):
                 target_fd.write(template)
 
         with DagsterInstance.from_config(tempdir) as instance:
-            storage = instance._event_storage
+            storage = instance._event_storage  # noqa: SLF001
             with pytest.raises(
                 (
                     db.exc.OperationalError,
@@ -333,7 +337,7 @@ def test_0_12_0_extract_asset_index_cols(hostname, conn_string):
                 target_fd.write(template)
 
         with DagsterInstance.from_config(tempdir) as instance:
-            storage = instance._event_storage
+            storage = instance._event_storage  # noqa: SLF001
 
             # make sure that executing the pipeline works
             execute_pipeline(asset_pipeline, instance=instance)
@@ -385,7 +389,7 @@ def test_0_12_0_asset_observation_backcompat(hostname, conn_string):
                 target_fd.write(template)
 
         with DagsterInstance.from_config(tempdir) as instance:
-            storage = instance._event_storage
+            storage = instance._event_storage  # noqa: SLF001
 
             assert not storage.has_secondary_index(ASSET_KEY_INDEX_COLS)
 
@@ -734,14 +738,16 @@ def test_add_asset_event_tags_table(hostname, conn_string):
             with pytest.raises(
                 DagsterInvalidInvocationError, match="In order to search for asset event tags"
             ):
-                instance._event_storage.get_event_tags_for_asset(asset_key=AssetKey(["a"]))
+                instance._event_storage.get_event_tags_for_asset(  # noqa: SLF001
+                    asset_key=AssetKey(["a"])
+                )
 
             instance.upgrade()
             assert "asset_event_tags" in get_tables(instance)
             asset_job.execute_in_process(instance=instance)
-            assert instance._event_storage.get_event_tags_for_asset(asset_key=AssetKey(["a"])) == [
-                {"dagster/foo": "bar"}
-            ]
+            assert instance._event_storage.get_event_tags_for_asset(  # noqa: SLF001
+                asset_key=AssetKey(["a"])
+            ) == [{"dagster/foo": "bar"}]
 
             indexes = get_indexes(instance, "asset_event_tags")
             assert "idx_asset_event_tags" in indexes

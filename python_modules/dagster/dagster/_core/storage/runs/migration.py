@@ -133,9 +133,7 @@ def add_run_stats(run_storage: RunStorage, run_id: str) -> None:
     if not isinstance(run_storage, SqlRunStorage):
         return
 
-    instance = check.inst_param(
-        run_storage._instance, "instance", DagsterInstance  # pylint: disable=protected-access
-    )
+    instance = check.inst_param(run_storage._instance, "instance", DagsterInstance)  # noqa: SLF001
     run_stats = instance.get_run_stats(run_id)
 
     with run_storage.connect() as conn:

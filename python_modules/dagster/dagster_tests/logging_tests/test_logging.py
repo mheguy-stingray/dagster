@@ -257,7 +257,7 @@ def test_default_context_logging():
     @solid(input_defs=[], output_defs=[])
     def default_context_solid(context):
         called["yes"] = True
-        for logger in context.log._dagster_handler._loggers:  # pylint: disable=protected-access
+        for logger in context.log._dagster_handler._loggers:  # noqa: SLF001
             assert logger.level == logging.DEBUG
 
     execute_solid(default_context_solid)

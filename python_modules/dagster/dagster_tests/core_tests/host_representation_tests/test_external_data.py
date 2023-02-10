@@ -430,7 +430,7 @@ def test_inter_op_dependency():
     # sort so that test is deterministic
     sorted_nodes = sorted(
         [
-            node._replace(
+            node._replace(  # noqa: SLF001
                 dependencies=sorted(node.dependencies, key=lambda d: d.upstream_asset_key),
                 depended_by=sorted(node.depended_by, key=lambda d: d.downstream_asset_key),
             )
@@ -691,7 +691,7 @@ def test_graph_output_metadata():
     # sort so that test is deterministic
     sorted_nodes = sorted(
         [
-            node._replace(
+            node._replace(  # noqa: SLF001
                 dependencies=sorted(node.dependencies, key=lambda d: d.upstream_asset_key),
                 depended_by=sorted(node.depended_by, key=lambda d: d.downstream_asset_key),
                 op_names=sorted(node.op_names),
@@ -804,7 +804,7 @@ def test_nasty_nested_graph_asset():
     # sort so that test is deterministic
     sorted_nodes = sorted(
         [
-            node._replace(
+            node._replace(  # noqa: SLF001
                 dependencies=sorted(node.dependencies, key=lambda d: d.upstream_asset_key),
                 depended_by=sorted(node.depended_by, key=lambda d: d.downstream_asset_key),
                 op_names=sorted(node.op_names),

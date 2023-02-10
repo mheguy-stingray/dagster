@@ -103,7 +103,9 @@ def parse_hadoop_log4j_records(lines):
 
         if m:
             if last_record:
-                last_record = last_record._replace(num_lines=line_num - last_record.start_line)
+                last_record = last_record._replace(  # noqa: SLF001
+                    num_lines=line_num - last_record.start_line
+                )
                 yield last_record
 
             matches = m.groupdict()
@@ -121,10 +123,14 @@ def parse_hadoop_log4j_records(lines):
         else:
             # add on to previous record
             if last_record:
-                last_record = last_record._replace(message=last_record.message + "\n" + line)
+                last_record = last_record._replace(  # noqa: SLF001
+                    message=last_record.message + "\n" + line
+                )
             else:
                 yield Log4jRecord.fake_record(line, line_num)
 
     if last_record:
-        last_record = last_record._replace(num_lines=line_num + 1 - last_record.start_line)
+        last_record = last_record._replace(  # noqa: SLF001
+            num_lines=line_num + 1 - last_record.start_line
+        )
         yield last_record

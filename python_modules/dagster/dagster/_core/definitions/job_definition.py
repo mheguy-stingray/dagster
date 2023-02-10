@@ -833,14 +833,14 @@ def get_subselected_graph_definition(
         filter(
             lambda input_mapping: input_mapping.maps_to.solid_name
             in [name for name, _ in selected_nodes],
-            graph._input_mappings,  # pylint: disable=protected-access
+            graph._input_mappings,  # noqa: SLF001
         )
     )
     new_output_mappings = list(
         filter(
             lambda output_mapping: output_mapping.maps_from.solid_name
             in [name for name, _ in selected_nodes],
-            graph._output_mappings,  # pylint: disable=protected-access
+            graph._output_mappings,  # noqa: SLF001
         )
     )
 
@@ -855,7 +855,7 @@ def get_subselected_graph_definition(
 
 def get_direct_input_values_from_job(target: PipelineDefinition) -> Mapping[str, Any]:
     if target.is_job:
-        return cast(JobDefinition, target).input_values  # pylint: disable=protected-access
+        return cast(JobDefinition, target).input_values
     else:
         return {}
 

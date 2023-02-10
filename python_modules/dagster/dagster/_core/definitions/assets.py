@@ -299,7 +299,7 @@ class AssetsDefinition(ResourceAddable):
         """
         if resource_defs is not None:
             experimental_arg_warning("resource_defs", "AssetsDefinition.from_graph")
-        return AssetsDefinition._from_node(
+        return AssetsDefinition._from_node(  # noqa: SLF001
             node_def=graph_def,
             keys_by_input_name=keys_by_input_name,
             keys_by_output_name=keys_by_output_name,
@@ -362,7 +362,7 @@ class AssetsDefinition(ResourceAddable):
                 outputs, and values are dictionaries of metadata to be associated with the related
                 asset.
         """
-        return AssetsDefinition._from_node(
+        return AssetsDefinition._from_node(  # noqa: SLF001
             node_def=op_def,
             keys_by_input_name=keys_by_input_name,
             keys_by_output_name=keys_by_output_name,
@@ -992,7 +992,7 @@ def _build_invocation_context_with_included_resources(
     )
 
     resource_defs = assets_def.resource_defs
-    invocation_resources = context.resources._asdict()
+    invocation_resources = context.resources._asdict()  # noqa: SLF001
     for resource_key in sorted(list(invocation_resources.keys())):
         if resource_key in resource_defs:
             raise DagsterInvalidInvocationError(
@@ -1003,14 +1003,13 @@ def _build_invocation_context_with_included_resources(
     all_resources = merge_dicts(resource_defs, invocation_resources)
 
     if isinstance(context, UnboundOpExecutionContext):
-        # pylint: disable=protected-access
         return build_op_context(
             resources=all_resources,
             config=context.solid_config,
-            resources_config=context._resources_config,
-            instance=context._instance,
-            partition_key=context._partition_key,
-            mapping_key=context._mapping_key,
+            resources_config=context._resources_config,  # noqa: SLF001
+            instance=context._instance,  # noqa: SLF001
+            partition_key=context._partition_key,  # noqa: SLF001
+            mapping_key=context._mapping_key,  # noqa: SLF001
         )
     else:
         # If user is mocking OpExecutionContext, send it through (we don't know

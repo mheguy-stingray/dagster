@@ -851,7 +851,9 @@ class ExecutionPlan(
         if len(step_output_versions) > 0:
             versions = StepOutputVersionData.get_version_list_from_dict(step_output_versions)
             if self.known_state:
-                known_state = self.known_state._replace(step_output_versions=versions)
+                known_state = self.known_state._replace(  # noqa: SLF001
+                    step_output_versions=versions
+                )
             else:
                 known_state = KnownExecutionState(step_output_versions=versions)
         else:

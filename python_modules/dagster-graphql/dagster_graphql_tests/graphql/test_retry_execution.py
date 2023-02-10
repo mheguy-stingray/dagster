@@ -599,7 +599,9 @@ class TestHardFailures(ExecutingGraphQLContextTestMatrix):
 
         # override run config to make it fail
         graphql_context.instance.delete_run(parent_run_id)
-        graphql_context.instance.add_run(parent_run._replace(run_config={"bad": "config"}))
+        graphql_context.instance.add_run(
+            parent_run._replace(run_config={"bad": "config"})  # noqa: SLF001
+        )
 
         retry = execute_dagster_graphql_and_finish_runs(
             graphql_context,

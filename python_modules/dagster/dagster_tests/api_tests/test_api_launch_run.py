@@ -38,7 +38,7 @@ def test_launch_run_with_unloadable_pipeline_grpc():
             res = deserialize_json_to_dagster_namedtuple(
                 api_client.start_run(
                     ExecuteExternalPipelineArgs(
-                        pipeline_origin=original_origin._replace(
+                        pipeline_origin=original_origin._replace(  # noqa: SLF001
                             pipeline_name="i_am_fake_pipeline"
                         ),
                         pipeline_run_id=run_id,

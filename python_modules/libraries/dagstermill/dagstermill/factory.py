@@ -138,7 +138,7 @@ def get_papermill_parameters(step_context, inputs, output_log_path, compute_desc
         "run_config": step_context.run_config,
     }
 
-    dm_solid_handle_kwargs = step_context.solid_handle._asdict()
+    dm_solid_handle_kwargs = step_context.solid_handle._asdict()  # noqa: SLF001
     dm_step_key = step_context.step.key
 
     parameters = {}

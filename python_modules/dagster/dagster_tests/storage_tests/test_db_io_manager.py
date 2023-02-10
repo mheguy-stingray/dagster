@@ -1,4 +1,3 @@
-# pylint: disable=protected-access
 from unittest.mock import MagicMock
 
 import pytest
@@ -227,13 +226,13 @@ def test_asset_schema_defaults():
 
     asset_key = AssetKey(["schema1", "table1"])
     output_context = build_output_context(asset_key=asset_key, resource_config=resource_config)
-    table_slice = manager._get_table_slice(output_context, output_context)
+    table_slice = manager._get_table_slice(output_context, output_context)  # noqa: SLF001
 
     assert table_slice.schema == "schema1"
 
     asset_key = AssetKey(["table1"])
     output_context = build_output_context(asset_key=asset_key, resource_config=resource_config)
-    table_slice = manager._get_table_slice(output_context, output_context)
+    table_slice = manager._get_table_slice(output_context, output_context)  # noqa: SLF001
 
     assert table_slice.schema == "public"
 
@@ -256,7 +255,7 @@ def test_asset_schema_defaults():
     output_context = build_output_context(
         asset_key=asset_key, resource_config=resource_config_w_schema
     )
-    table_slice = manager_w_schema._get_table_slice(output_context, output_context)
+    table_slice = manager_w_schema._get_table_slice(output_context, output_context)  # noqa: SLF001
 
     assert table_slice.schema == "my_schema"
 
@@ -265,7 +264,9 @@ def test_asset_schema_defaults():
         asset_key=asset_key, resource_config=resource_config_w_schema
     )
     with pytest.raises(DagsterInvalidDefinitionError):
-        table_slice = manager_w_schema._get_table_slice(output_context, output_context)
+        table_slice = manager_w_schema._get_table_slice(  # noqa: SLF001
+            output_context, output_context
+        )
 
 
 def test_output_schema_defaults():
@@ -275,12 +276,12 @@ def test_output_schema_defaults():
     output_context = build_output_context(
         name="table1", metadata={"schema": "schema1"}, resource_config=resource_config
     )
-    table_slice = manager._get_table_slice(output_context, output_context)
+    table_slice = manager._get_table_slice(output_context, output_context)  # noqa: SLF001
 
     assert table_slice.schema == "schema1"
 
     output_context = build_output_context(name="table1", resource_config=resource_config)
-    table_slice = manager._get_table_slice(output_context, output_context)
+    table_slice = manager._get_table_slice(output_context, output_context)  # noqa: SLF001
 
     assert table_slice.schema == "public"
 
@@ -300,7 +301,7 @@ def test_output_schema_defaults():
     )
 
     output_context = build_output_context(name="table1", resource_config=resource_config_w_schema)
-    table_slice = manager_w_schema._get_table_slice(output_context, output_context)
+    table_slice = manager_w_schema._get_table_slice(output_context, output_context)  # noqa: SLF001
 
     assert table_slice.schema == "my_schema"
 
@@ -308,7 +309,9 @@ def test_output_schema_defaults():
         name="table1", metadata={"schema": "schema1"}, resource_config=resource_config_w_schema
     )
     with pytest.raises(DagsterInvalidDefinitionError):
-        table_slice = manager_w_schema._get_table_slice(output_context, output_context)
+        table_slice = manager_w_schema._get_table_slice(  # noqa: SLF001
+            output_context, output_context
+        )
 
 
 def test_handle_none_output():

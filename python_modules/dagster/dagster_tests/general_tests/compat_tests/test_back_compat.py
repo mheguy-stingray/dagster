@@ -1,4 +1,3 @@
-# pylint: disable=protected-access
 import os
 import re
 import sqlite3
@@ -89,17 +88,17 @@ def test_event_log_step_key_migration():
 
         runs = instance.get_runs()
         assert len(runs) == 1
-        run_ids = instance._event_storage.get_all_run_ids()
+        run_ids = instance._event_storage.get_all_run_ids()  # noqa: SLF001
         assert run_ids == ["6405c4a0-3ccc-4600-af81-b5ee197f8528"]
-        assert isinstance(instance._event_storage, SqlEventLogStorage)
-        records = instance._event_storage.get_records_for_run(
+        assert isinstance(instance._event_storage, SqlEventLogStorage)  # noqa: SLF001
+        records = instance._event_storage.get_records_for_run(  # noqa: SLF001
             "6405c4a0-3ccc-4600-af81-b5ee197f8528"
         ).records
         assert len(records) == 40
 
         step_key_records = []
         for record in records:
-            row_data = instance._event_storage.get_event_log_table_data(
+            row_data = instance._event_storage.get_event_log_table_data(  # noqa: SLF001
                 "6405c4a0-3ccc-4600-af81-b5ee197f8528", record.storage_id
             )
             if row_data.step_key is not None:
@@ -111,7 +110,7 @@ def test_event_log_step_key_migration():
 
         step_key_records = []
         for record in records:
-            row_data = instance._event_storage.get_event_log_table_data(
+            row_data = instance._event_storage.get_event_log_table_data(  # noqa: SLF001
                 "6405c4a0-3ccc-4600-af81-b5ee197f8528", record.storage_id
             )
             if row_data.step_key is not None:
@@ -230,7 +229,7 @@ def test_downgrade_and_upgrade():
 
         assert len(instance.get_runs()) == 1
 
-        instance._run_storage._alembic_downgrade(rev="9fe9e746268c")
+        instance._run_storage._alembic_downgrade(rev="9fe9e746268c")  # noqa: SLF001  # noqa: SLF001
 
         assert get_current_alembic_version(db_path) == "9fe9e746268c"
 
@@ -328,7 +327,7 @@ def test_mode_column_migration():
         assert instance.get_run_records()
         assert instance.create_run_for_pipeline(_test)
 
-        instance._run_storage._alembic_downgrade(rev="72686963a802")
+        instance._run_storage._alembic_downgrade(rev="72686963a802")  # noqa: SLF001  # noqa: SLF001
 
         assert get_current_alembic_version(db_path) == "72686963a802"
         assert "mode" not in set(get_sqlite3_columns(db_path, "runs"))
@@ -349,7 +348,7 @@ def test_run_partition_migration():
         assert "partition" in set(get_sqlite3_columns(db_path, "runs"))
         assert "partition_set" in set(get_sqlite3_columns(db_path, "runs"))
 
-        instance._run_storage._alembic_downgrade(rev="224640159acf")
+        instance._run_storage._alembic_downgrade(rev="224640159acf")  # noqa: SLF001  # noqa: SLF001
         assert get_current_alembic_version(db_path) == "224640159acf"
 
         assert "partition" not in set(get_sqlite3_columns(db_path, "runs"))
@@ -372,9 +371,9 @@ def test_run_partition_data_migration():
 
         with DagsterInstance.from_ref(InstanceRef.from_dir(test_dir)) as instance:
             with upgrading_instance(instance):
-                instance._run_storage.upgrade()
+                instance._run_storage.upgrade()  # noqa: SLF001
 
-        run_storage = instance._run_storage
+        run_storage = instance._run_storage  # noqa: SLF001
         assert isinstance(run_storage, SqlRunStorage)
 
         partition_set_name = "ingest_and_train"
@@ -382,21 +381,30 @@ def test_run_partition_data_migration():
 
         # ensure old tag-based reads are working
         assert not run_storage.has_built_index(RUN_PARTITIONS)
-        assert len(run_storage._get_partition_runs(partition_set_name, partition_name)) == 2
+        assert (
+            len(run_storage._get_partition_runs(partition_set_name, partition_name))  # noqa: SLF001
+            == 2
+        )
 
         # turn on reads for the partition column, without migrating the data
         run_storage.mark_index_built(RUN_PARTITIONS)
 
         # ensure that no runs are returned because the data has not been migrated
         assert run_storage.has_built_index(RUN_PARTITIONS)
-        assert len(run_storage._get_partition_runs(partition_set_name, partition_name)) == 0
+        assert (
+            len(run_storage._get_partition_runs(partition_set_name, partition_name))  # noqa: SLF001
+            == 0
+        )
 
         # actually migrate the data
         run_storage.migrate(force_rebuild_all=True)
 
         # ensure that we get the same partitioned runs returned
         assert run_storage.has_built_index(RUN_PARTITIONS)
-        assert len(run_storage._get_partition_runs(partition_set_name, partition_name)) == 2
+        assert (
+            len(run_storage._get_partition_runs(partition_set_name, partition_name))  # noqa: SLF001
+            == 2
+        )
 
 
 def test_0_10_0_schedule_wipe():
@@ -482,7 +490,7 @@ def test_0_12_0_extract_asset_index_cols():
         assert "wipe_timestamp" not in set(get_sqlite3_columns(db_path, "asset_keys"))
         assert "tags" not in set(get_sqlite3_columns(db_path, "asset_keys"))
         with DagsterInstance.from_ref(InstanceRef.from_dir(test_dir)) as instance:
-            storage = instance._event_storage
+            storage = instance._event_storage  # noqa: SLF001
 
             # make sure that executing the pipeline works
             execute_pipeline(asset_pipeline, instance=instance)
@@ -618,7 +626,7 @@ def test_start_time_end_time():
         assert instance.get_run_records()
         assert instance.create_run_for_pipeline(_test)
 
-        instance._run_storage._alembic_downgrade(rev="7f2b1a4ca7a5")
+        instance._run_storage._alembic_downgrade(rev="7f2b1a4ca7a5")  # noqa: SLF001  # noqa: SLF001
 
         assert get_current_alembic_version(db_path) == "7f2b1a4ca7a5"
         assert True
@@ -951,7 +959,7 @@ def test_add_bulk_actions_columns():
 
             # check data migration
             backfill_count = len(instance.get_backfills())
-            migrated_row_count = instance._run_storage.fetchone(
+            migrated_row_count = instance._run_storage.fetchone(  # noqa: SLF001
                 db.select([db.func.count()])
                 .select_from(BulkActionsTable)
                 .where(BulkActionsTable.c.selector_id.isnot(None))
@@ -981,7 +989,7 @@ def test_add_bulk_actions_columns():
                     backfill_timestamp=pendulum.now().timestamp(),
                 )
             )
-            unmigrated_row_count = instance._run_storage.fetchone(
+            unmigrated_row_count = instance._run_storage.fetchone(  # noqa: SLF001
                 db.select([db.func.count()])
                 .select_from(BulkActionsTable)
                 .where(BulkActionsTable.c.selector_id.is_(None))
@@ -989,7 +997,9 @@ def test_add_bulk_actions_columns():
             assert unmigrated_row_count == 0
 
             # test downgrade
-            instance._run_storage._alembic_downgrade(rev="721d858e1dda")
+            instance._run_storage._alembic_downgrade(  # noqa: SLF001  # noqa: SLF001
+                rev="721d858e1dda"
+            )
 
             assert get_current_alembic_version(db_path) == "721d858e1dda"
             assert {"id", "key", "status", "timestamp", "body"} == set(
@@ -1018,7 +1028,9 @@ def test_add_kvs_table():
             assert "kvs" in get_sqlite3_tables(db_path)
             assert get_sqlite3_indexes(db_path, "kvs") == ["idx_kvs_keys_unique"]
 
-            instance._run_storage._alembic_downgrade(rev="6860f830e40c")
+            instance._run_storage._alembic_downgrade(  # noqa: SLF001  # noqa: SLF001
+                rev="6860f830e40c"
+            )
 
             assert "kvs" not in get_sqlite3_tables(db_path)
             assert get_sqlite3_indexes(db_path, "kvs") == []
@@ -1046,7 +1058,9 @@ def test_add_asset_event_tags_table():
             with pytest.raises(
                 DagsterInvalidInvocationError, match="In order to search for asset event tags"
             ):
-                instance._event_storage.get_event_tags_for_asset(asset_key=AssetKey(["a"]))
+                instance._event_storage.get_event_tags_for_asset(  # noqa: SLF001
+                    asset_key=AssetKey(["a"])
+                )
 
             assert get_sqlite3_indexes(db_path, "asset_event_tags") == []
 
@@ -1055,15 +1069,17 @@ def test_add_asset_event_tags_table():
             assert "asset_event_tags" in get_sqlite3_tables(db_path)
 
             asset_job.execute_in_process(instance=instance)
-            assert instance._event_storage.get_event_tags_for_asset(asset_key=AssetKey(["a"])) == [
-                {"dagster/foo": "bar"}
-            ]
+            assert instance._event_storage.get_event_tags_for_asset(  # noqa: SLF001
+                asset_key=AssetKey(["a"])
+            ) == [{"dagster/foo": "bar"}]
 
             indexes = get_sqlite3_indexes(db_path, "asset_event_tags")
             assert "idx_asset_event_tags_event_id" in indexes
             assert "idx_asset_event_tags" in indexes
 
-            instance._run_storage._alembic_downgrade(rev="a00dd8d936a1")
+            instance._run_storage._alembic_downgrade(  # noqa: SLF001  # noqa: SLF001
+                rev="a00dd8d936a1"
+            )
 
             assert "asset_event_tags" not in get_sqlite3_tables(db_path)
             assert get_sqlite3_indexes(db_path, "asset_event_tags") == []

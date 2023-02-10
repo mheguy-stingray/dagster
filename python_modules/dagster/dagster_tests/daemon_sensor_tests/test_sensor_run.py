@@ -950,14 +950,16 @@ def test_sensors_keyed_on_selector_not_origin(instance, workspace_context, exter
         existing_origin = external_sensor.get_external_origin()
 
         repo_location_origin = existing_origin.external_repository_origin.repository_location_origin
-        modified_loadable_target_origin = repo_location_origin.loadable_target_origin._replace(
-            executable_path="/different/executable_path"
+        modified_loadable_target_origin = (
+            repo_location_origin.loadable_target_origin._replace(  # noqa: SLF001
+                executable_path="/different/executable_path"
+            )
         )
 
         # Change metadata on the origin that shouldn't matter for execution
-        modified_origin = existing_origin._replace(
-            external_repository_origin=existing_origin.external_repository_origin._replace(
-                repository_location_origin=repo_location_origin._replace(
+        modified_origin = existing_origin._replace(  # noqa: SLF001
+            external_repository_origin=existing_origin.external_repository_origin._replace(  # noqa: SLF001
+                repository_location_origin=repo_location_origin._replace(  # noqa: SLF001
                     loadable_target_origin=modified_loadable_target_origin
                 )
             )

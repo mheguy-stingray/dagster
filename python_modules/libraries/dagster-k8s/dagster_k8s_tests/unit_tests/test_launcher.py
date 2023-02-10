@@ -106,8 +106,8 @@ def test_launcher_with_container_context(kubeconfig_file):
     repo_def = recon_repo.get_definition()
 
     python_origin = recon_pipeline.get_python_origin()
-    python_origin = python_origin._replace(
-        repository_origin=python_origin.repository_origin._replace(
+    python_origin = python_origin._replace(  # noqa: SLF001
+        repository_origin=python_origin.repository_origin._replace(  # noqa: SLF001
             container_context=container_context_config,
         )
     )
@@ -219,8 +219,8 @@ def test_launcher_with_k8s_config(kubeconfig_file):
     repo_def = recon_repo.get_definition()
 
     python_origin = recon_pipeline.get_python_origin()
-    python_origin = python_origin._replace(
-        repository_origin=python_origin.repository_origin._replace(
+    python_origin = python_origin._replace(  # noqa: SLF001
+        repository_origin=python_origin.repository_origin._replace(  # noqa: SLF001
             container_context=container_context_config,
         )
     )

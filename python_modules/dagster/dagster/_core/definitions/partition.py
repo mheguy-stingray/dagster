@@ -1393,8 +1393,8 @@ class DefaultPartitionsSubset(PartitionsSubset):
     def __eq__(self, other):
         return (
             isinstance(other, DefaultPartitionsSubset)
-            and self._partitions_def == other._partitions_def
-            and self._subset == other._subset
+            and self._partitions_def == other._partitions_def  # noqa: SLF001
+            and self._subset == other._subset  # noqa: SLF001
         )
 
     def __len__(self) -> int:

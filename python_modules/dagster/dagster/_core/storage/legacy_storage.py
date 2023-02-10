@@ -160,10 +160,10 @@ class LegacyRunStorage(RunStorage, ConfigurableClass):
 
     @property
     def _instance(self):
-        return self._storage._instance  # pylint: disable=protected-access
+        return self._storage._instance  # noqa: SLF001
 
     def register_instance(self, instance):
-        if not self._storage._instance:  # pylint: disable=protected-access
+        if not self._storage._instance:  # noqa: SLF001
             self._storage.register_instance(instance)
 
     @classmethod
@@ -371,10 +371,10 @@ class LegacyEventLogStorage(EventLogStorage, ConfigurableClass):
 
     @property
     def _instance(self):
-        return self._storage._instance  # pylint: disable=protected-access
+        return self._storage._instance  # noqa: SLF001
 
     def register_instance(self, instance):
-        if not self._storage._instance:  # pylint: disable=protected-access
+        if not self._storage._instance:  # noqa: SLF001
             self._storage.register_instance(instance)
 
     def get_logs_for_run(
@@ -561,10 +561,10 @@ class LegacyScheduleStorage(ScheduleStorage, ConfigurableClass):
 
     @property
     def _instance(self):
-        return self._storage._instance  # pylint: disable=protected-access
+        return self._storage._instance  # noqa: SLF001
 
     def register_instance(self, instance):
-        if not self._storage._instance:  # pylint: disable=protected-access
+        if not self._storage._instance:  # noqa: SLF001
             self._storage.register_instance(instance)
 
     def wipe(self) -> None:

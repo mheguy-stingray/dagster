@@ -191,7 +191,7 @@ def test_rehydrate_solid_handle():
     assert h.name == "foo"
     assert h.parent is None
 
-    h = NodeHandle.from_dict(json.loads(json.dumps(h._asdict())))
+    h = NodeHandle.from_dict(json.loads(json.dumps(h._asdict())))  # noqa: SLF001
     assert h.name == "foo"
     assert h.parent is None
 
@@ -201,7 +201,7 @@ def test_rehydrate_solid_handle():
     assert h.parent.name == "bar"
     assert h.parent.parent is None
 
-    h = NodeHandle.from_dict(json.loads(json.dumps(h._asdict())))
+    h = NodeHandle.from_dict(json.loads(json.dumps(h._asdict())))  # noqa: SLF001
     assert h.name == "foo"
     assert isinstance(h.parent, NodeHandle)
     assert h.parent.name == "bar"
@@ -215,7 +215,7 @@ def test_rehydrate_solid_handle():
     assert h.parent.parent.name == "baz"
     assert h.parent.parent.parent is None
 
-    h = NodeHandle.from_dict(json.loads(json.dumps(h._asdict())))
+    h = NodeHandle.from_dict(json.loads(json.dumps(h._asdict())))  # noqa: SLF001
     assert h.name == "foo"
     assert isinstance(h.parent, NodeHandle)
     assert h.parent.name == "bar"

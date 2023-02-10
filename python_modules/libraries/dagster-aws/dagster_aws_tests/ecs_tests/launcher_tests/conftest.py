@@ -423,8 +423,8 @@ def launch_run_with_container_context(
 ):
     def _launch_run(instance):
         python_origin = external_pipeline.get_python_origin()
-        python_origin = python_origin._replace(
-            repository_origin=python_origin.repository_origin._replace(
+        python_origin = python_origin._replace(  # noqa: SLF001
+            repository_origin=python_origin.repository_origin._replace(  # noqa: SLF001
                 container_context=container_context_config,
             )
         )

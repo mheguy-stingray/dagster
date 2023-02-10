@@ -213,7 +213,7 @@ def list_images(images_path: Optional[str] = None) -> List[DagsterDockerImage]:
     for image in image_folders:
         img = DagsterDockerImage(image, images_path=images_path)
         if image in CUSTOM_BUILD_CONTEXTMANAGERS:
-            img = img._replace(build_cm=CUSTOM_BUILD_CONTEXTMANAGERS[image])
+            img = img._replace(build_cm=CUSTOM_BUILD_CONTEXTMANAGERS[image])  # noqa: SLF001
         images.append(img)
     return images
 

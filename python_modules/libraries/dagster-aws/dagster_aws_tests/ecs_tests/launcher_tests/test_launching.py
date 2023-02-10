@@ -1,5 +1,3 @@
-# pylint: disable=protected-access
-
 import copy
 import time
 from concurrent.futures import ThreadPoolExecutor
@@ -73,7 +71,7 @@ def test_default_launcher(
 
     # The run is tagged with info about the ECS task
     assert instance.get_run_by_id(run.run_id).tags["ecs/task_arn"] == task_arn
-    cluster_arn = ecs._cluster_arn("default")
+    cluster_arn = ecs._cluster_arn("default")  # noqa: SLF001
     assert instance.get_run_by_id(run.run_id).tags["ecs/cluster"] == cluster_arn
 
     # If we're using the new long ARN format,
@@ -169,7 +167,7 @@ def test_launcher_dont_use_current_task(
 
     # The run is tagged with info about the ECS task
     assert instance.get_run_by_id(run.run_id).tags["ecs/task_arn"] == task_arn
-    cluster_arn = ecs._cluster_arn(cluster)
+    cluster_arn = ecs._cluster_arn(cluster)  # noqa: SLF001
     assert instance.get_run_by_id(run.run_id).tags["ecs/cluster"] == cluster_arn
 
     assert ecs.list_tags_for_resource(resourceArn=task_arn)["tags"][0]["key"] == "dagster/run_id"
@@ -305,19 +303,23 @@ def test_reuse_task_definition(instance, ecs):
     )
 
     # New task definition not re-used since it is new
-    assert not instance.run_launcher._reuse_task_definition(task_definition_config, container_name)
+    assert not instance.run_launcher._reuse_task_definition(  # noqa: SLF001
+        task_definition_config, container_name
+    )
     # Once it's registered, it is re-used
 
     ecs.register_task_definition(**original_task_definition)
 
-    assert instance.run_launcher._reuse_task_definition(task_definition_config, container_name)
+    assert instance.run_launcher._reuse_task_definition(  # noqa: SLF001
+        task_definition_config, container_name
+    )
 
     # Reordering environment is still reused
     task_definition = copy.deepcopy(original_task_definition)
     task_definition["containerDefinitions"][0]["environment"] = list(
         reversed(task_definition["containerDefinitions"][0]["environment"])
     )
-    assert instance.run_launcher._reuse_task_definition(
+    assert instance.run_launcher._reuse_task_definition(  # noqa: SLF001
         DagsterEcsTaskDefinitionConfig.from_task_definition_dict(task_definition, container_name),
         container_name,
     )
@@ -326,7 +328,7 @@ def test_reuse_task_definition(instance, ecs):
     task_definition = copy.deepcopy(original_task_definition)
     task_definition["containerDefinitions"][0]["image"] = "new-image"
 
-    assert not instance.run_launcher._reuse_task_definition(
+    assert not instance.run_launcher._reuse_task_definition(  # noqa: SLF001
         DagsterEcsTaskDefinitionConfig.from_task_definition_dict(task_definition, container_name),
         container_name,
     )
@@ -334,12 +336,12 @@ def test_reuse_task_definition(instance, ecs):
     # Changed container name fails
     task_definition = copy.deepcopy(original_task_definition)
     task_definition["containerDefinitions"][0]["name"] = "new-container"
-    assert not instance.run_launcher._reuse_task_definition(
+    assert not instance.run_launcher._reuse_task_definition(  # noqa: SLF001
         DagsterEcsTaskDefinitionConfig.from_task_definition_dict(task_definition, "new-container"),
         container_name,
     )
 
-    assert not instance.run_launcher._reuse_task_definition(
+    assert not instance.run_launcher._reuse_task_definition(  # noqa: SLF001
         DagsterEcsTaskDefinitionConfig.from_task_definition_dict(
             original_task_definition, container_name
         ),
@@ -351,7 +353,7 @@ def test_reuse_task_definition(instance, ecs):
     task_definition["containerDefinitions"][0]["secrets"].append(
         {"name": "new-secret", "valueFrom": "fake-arn"}
     )
-    assert not instance.run_launcher._reuse_task_definition(
+    assert not instance.run_launcher._reuse_task_definition(  # noqa: SLF001
         DagsterEcsTaskDefinitionConfig.from_task_definition_dict(task_definition, container_name),
         container_name,
     )
@@ -362,7 +364,7 @@ def test_reuse_task_definition(instance, ecs):
     task_definition["containerDefinitions"][0]["environment"].append(
         {"name": "MY_ENV_VAR", "value": "MY_ENV_VALUE"}
     )
-    assert not instance.run_launcher._reuse_task_definition(
+    assert not instance.run_launcher._reuse_task_definition(  # noqa: SLF001
         DagsterEcsTaskDefinitionConfig.from_task_definition_dict(
             task_definition,
             container_name,
@@ -373,7 +375,7 @@ def test_reuse_task_definition(instance, ecs):
     # Changed execution role fails
     task_definition = copy.deepcopy(original_task_definition)
     task_definition["executionRoleArn"] = "new-role"
-    assert not instance.run_launcher._reuse_task_definition(
+    assert not instance.run_launcher._reuse_task_definition(  # noqa: SLF001
         DagsterEcsTaskDefinitionConfig.from_task_definition_dict(task_definition, container_name),
         container_name,
     )
@@ -381,7 +383,7 @@ def test_reuse_task_definition(instance, ecs):
     # Changed task role fails
     task_definition = copy.deepcopy(original_task_definition)
     task_definition["taskRoleArn"] = "new-role"
-    assert not instance.run_launcher._reuse_task_definition(
+    assert not instance.run_launcher._reuse_task_definition(  # noqa: SLF001
         DagsterEcsTaskDefinitionConfig.from_task_definition_dict(task_definition, container_name),
         container_name,
     )
@@ -389,7 +391,7 @@ def test_reuse_task_definition(instance, ecs):
     # Changed command fails
     task_definition = copy.deepcopy(original_task_definition)
     task_definition["containerDefinitions"][0]["command"] = ["echo", "GOODBYE"]
-    assert not instance.run_launcher._reuse_task_definition(
+    assert not instance.run_launcher._reuse_task_definition(  # noqa: SLF001
         DagsterEcsTaskDefinitionConfig.from_task_definition_dict(task_definition, container_name),
         container_name,
     )
@@ -397,7 +399,7 @@ def test_reuse_task_definition(instance, ecs):
     # Any other diff passes
     task_definition = copy.deepcopy(original_task_definition)
     task_definition["somethingElse"] = "boom"
-    assert instance.run_launcher._reuse_task_definition(
+    assert instance.run_launcher._reuse_task_definition(  # noqa: SLF001
         DagsterEcsTaskDefinitionConfig.from_task_definition_dict(task_definition, container_name),
         container_name,
     )
@@ -406,7 +408,7 @@ def test_reuse_task_definition(instance, ecs):
     task_definition = copy.deepcopy(original_task_definition)
     task_definition["containerDefinitions"][1]["image"] = "new_sidecar_image"
 
-    assert not instance.run_launcher._reuse_task_definition(
+    assert not instance.run_launcher._reuse_task_definition(  # noqa: SLF001
         DagsterEcsTaskDefinitionConfig.from_task_definition_dict(task_definition, container_name),
         container_name,
     )
@@ -415,7 +417,7 @@ def test_reuse_task_definition(instance, ecs):
     task_definition = copy.deepcopy(original_task_definition)
     task_definition["containerDefinitions"][1]["name"] = "new_sidecar_name"
 
-    assert not instance.run_launcher._reuse_task_definition(
+    assert not instance.run_launcher._reuse_task_definition(  # noqa: SLF001
         DagsterEcsTaskDefinitionConfig.from_task_definition_dict(task_definition, container_name),
         container_name,
     )
@@ -424,7 +426,7 @@ def test_reuse_task_definition(instance, ecs):
     task_definition = copy.deepcopy(original_task_definition)
     task_definition["containerDefinitions"][1]["environment"] = environment
 
-    assert not instance.run_launcher._reuse_task_definition(
+    assert not instance.run_launcher._reuse_task_definition(  # noqa: SLF001
         DagsterEcsTaskDefinitionConfig.from_task_definition_dict(task_definition, container_name),
         container_name,
     )
@@ -435,7 +437,7 @@ def test_reuse_task_definition(instance, ecs):
         {"name": "a_secret", "valueFrom": "an_arn"}
     ]
 
-    assert not instance.run_launcher._reuse_task_definition(
+    assert not instance.run_launcher._reuse_task_definition(  # noqa: SLF001
         DagsterEcsTaskDefinitionConfig.from_task_definition_dict(task_definition, container_name),
         container_name,
     )
@@ -443,7 +445,7 @@ def test_reuse_task_definition(instance, ecs):
     # Other changes to sidecars do not fail
     task_definition = copy.deepcopy(original_task_definition)
     task_definition["containerDefinitions"][1]["cpu"] = "256"
-    assert instance.run_launcher._reuse_task_definition(
+    assert instance.run_launcher._reuse_task_definition(  # noqa: SLF001
         DagsterEcsTaskDefinitionConfig.from_task_definition_dict(task_definition, container_name),
         container_name,
     )
@@ -453,7 +455,7 @@ def test_reuse_task_definition(instance, ecs):
     task_definition["containerDefinitions"][0]["name"] = "foobar"
     ecs.register_task_definition(**task_definition)
 
-    assert not instance.run_launcher._reuse_task_definition(
+    assert not instance.run_launcher._reuse_task_definition(  # noqa: SLF001
         DagsterEcsTaskDefinitionConfig.from_task_definition_dict(
             original_task_definition, container_name
         ),
@@ -822,7 +824,7 @@ def test_status(
 
         # with logs, the failure includes the run worker logs
 
-        family = instance.run_launcher._get_run_task_definition_family(run)
+        family = instance.run_launcher._get_run_task_definition_family(run)  # noqa: SLF001
         log_stream = f"{family}/run/{task_id}"
         cloudwatch_client.create_log_stream(logGroupName=log_group, logStreamName=log_stream)
 

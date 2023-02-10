@@ -608,7 +608,7 @@ class PendingNodeInvocation:
                     input_name=input_name,
                     node_name=node_name,
                     node_type=self.node_def.node_type_str,
-                    options=output_node._fields,
+                    options=output_node._fields,  # noqa: SLF001
                 )
             )
         elif isinstance(output_node, InvokedNodeDynamicOutputWrapper):

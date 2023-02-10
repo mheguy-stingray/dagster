@@ -163,8 +163,8 @@ def get_dagster_meta_dict(
 ) -> Mapping[str, Any]:
     # combine all dagster meta information into a single dictionary
     meta_dict = {
-        **logging_metadata._asdict(),
-        **dagster_message_props._asdict(),
+        **logging_metadata._asdict(),  # noqa: SLF001
+        **dagster_message_props._asdict(),  # noqa: SLF001
     }
     # step-level events can be logged from a pipeline context. for these cases, pull the step
     # key from the underlying DagsterEvent
@@ -202,7 +202,7 @@ class DagsterLogHandler(logging.Handler):
 
     def with_tags(self, **new_tags: str) -> DagsterLogHandler:
         return DagsterLogHandler(
-            logging_metadata=self.logging_metadata._replace(**new_tags),
+            logging_metadata=self.logging_metadata._replace(**new_tags),  # noqa: SLF001
             loggers=self._loggers,
             handlers=self._handlers,
         )

@@ -129,7 +129,7 @@ def _check_run_equality(
     pipeline_run: DagsterRun, candidate_run: DagsterRun
 ) -> Mapping[str, Tuple[Any, Any]]:
     field_diff = {}
-    for field in pipeline_run._fields:
+    for field in pipeline_run._fields:  # noqa: SLF001
         expected_value = getattr(pipeline_run, field)
         candidate_value = getattr(candidate_run, field)
         if expected_value != candidate_value:
@@ -558,13 +558,13 @@ class DagsterInstance(DynamicPartitionsStore):
     def temp_storage() -> str:
         from dagster._core.test_utils import environ
 
-        if DagsterInstance._PROCESS_TEMPDIR is None:
-            DagsterInstance._EXIT_STACK = ExitStack()
-            DagsterInstance._EXIT_STACK.enter_context(
+        if DagsterInstance._PROCESS_TEMPDIR is None:  # noqa: SLF001
+            DagsterInstance._EXIT_STACK = ExitStack()  # noqa: SLF001
+            DagsterInstance._EXIT_STACK.enter_context(  # noqa: SLF001
                 environ({"DAGSTER_TELEMETRY_DISABLED": "yes"})
             )
-            DagsterInstance._PROCESS_TEMPDIR = TemporaryDirectory()
-        return cast(TemporaryDirectory, DagsterInstance._PROCESS_TEMPDIR).name
+            DagsterInstance._PROCESS_TEMPDIR = TemporaryDirectory()  # noqa: SLF001
+        return cast(TemporaryDirectory, DagsterInstance._PROCESS_TEMPDIR).name  # noqa: SLF001
 
     def _info(self, component):
         # ConfigurableClass may not have inst_data if it's a direct instantiation
@@ -2271,8 +2271,8 @@ class DagsterInstance(DynamicPartitionsStore):
 
     def __exit__(self, exception_type, exception_value, traceback):
         self.dispose()
-        if DagsterInstance._EXIT_STACK:
-            DagsterInstance._EXIT_STACK.close()
+        if DagsterInstance._EXIT_STACK:  # noqa: SLF001
+            DagsterInstance._EXIT_STACK.close()  # noqa: SLF001
 
     # dagster daemon
     def add_daemon_heartbeat(self, daemon_heartbeat: "DaemonHeartbeat"):

@@ -1,4 +1,3 @@
-# pylint: disable=protected-access
 import os
 import subprocess
 import tempfile
@@ -23,15 +22,21 @@ from sqlalchemy import create_engine, inspect
 
 
 def get_columns(instance, table_name: str):
-    return set(c["name"] for c in inspect(instance.run_storage._engine).get_columns(table_name))
+    return set(
+        c["name"]
+        for c in inspect(instance.run_storage._engine).get_columns(table_name)  # noqa: SLF001
+    )
 
 
 def get_indexes(instance, table_name: str):
-    return set(c["name"] for c in inspect(instance.run_storage._engine).get_indexes(table_name))
+    return set(
+        c["name"]
+        for c in inspect(instance.run_storage._engine).get_indexes(table_name)  # noqa: SLF001
+    )
 
 
 def get_tables(instance):
-    return instance.run_storage._engine.table_names()
+    return instance.run_storage._engine.table_names()  # noqa: SLF001
 
 
 def _reconstruct_from_file(conn_string, path, _username="root", _password="test"):
@@ -126,7 +131,7 @@ def test_asset_observation_backcompat(conn_string):
                 target_fd.write(template)
 
         with DagsterInstance.from_config(tempdir) as instance:
-            storage = instance._event_storage
+            storage = instance._event_storage  # noqa: SLF001
 
             assert not instance.event_log_storage.has_secondary_index(ASSET_KEY_INDEX_COLS)
 
@@ -274,7 +279,9 @@ def test_add_asset_event_tags_table(conn_string):
             with pytest.raises(
                 DagsterInvalidInvocationError, match="In order to search for asset event tags"
             ):
-                instance._event_storage.get_event_tags_for_asset(asset_key=AssetKey(["a"]))
+                instance._event_storage.get_event_tags_for_asset(  # noqa: SLF001
+                    asset_key=AssetKey(["a"])
+                )
 
             assert (
                 len(
@@ -289,9 +296,9 @@ def test_add_asset_event_tags_table(conn_string):
                 == 1
             )
             # test version that doesn't support intersect:
-            mysql_version = instance._event_storage._mysql_version
+            mysql_version = instance._event_storage._mysql_version  # noqa: SLF001  # noqa: SLF001
             try:
-                instance._event_storage._mysql_version = "8.0.30"
+                instance._event_storage._mysql_version = "8.0.30"  # noqa: SLF001  # noqa: SLF001
                 assert (
                     len(
                         instance.get_event_records(
@@ -305,14 +312,16 @@ def test_add_asset_event_tags_table(conn_string):
                     == 1
                 )
             finally:
-                instance._event_storage._mysql_version = mysql_version
+                instance._event_storage._mysql_version = (  # noqa: SLF001  # noqa: SLF001
+                    mysql_version
+                )
 
             instance.upgrade()
             assert "asset_event_tags" in get_tables(instance)
             asset_job.execute_in_process(instance=instance)
-            assert instance._event_storage.get_event_tags_for_asset(asset_key=AssetKey(["a"])) == [
-                {"dagster/foo": "bar"}
-            ]
+            assert instance._event_storage.get_event_tags_for_asset(  # noqa: SLF001
+                asset_key=AssetKey(["a"])
+            ) == [{"dagster/foo": "bar"}]
 
             indexes = get_indexes(instance, "asset_event_tags")
             assert "idx_asset_event_tags" in indexes

@@ -68,9 +68,9 @@ def pipeline_handle():
 
 @pytest.fixture(scope="module")
 def other_location_pipeline_handle(pipeline_handle):
-    return pipeline_handle._replace(
-        repository_handle=pipeline_handle.repository_handle._replace(
-            repository_location_origin=pipeline_handle.repository_handle.repository_location_origin._replace(
+    return pipeline_handle._replace(  # noqa: SLF001
+        repository_handle=pipeline_handle.repository_handle._replace(  # noqa: SLF001
+            repository_location_origin=pipeline_handle.repository_handle.repository_location_origin._replace(  # noqa: SLF001
                 location_name="other_location_name"
             )
         )

@@ -27,9 +27,9 @@ def task_definitions_match(
     )
 
     # sidecars are checked separately below
-    match_without_sidecars = existing_task_definition_config._replace(
+    match_without_sidecars = existing_task_definition_config._replace(  # noqa: SLF001
         sidecars=[],
-    ) == desired_task_definition_config._replace(
+    ) == desired_task_definition_config._replace(  # noqa: SLF001
         sidecars=[],
     )
     if not match_without_sidecars:
