@@ -57,6 +57,7 @@ from .external_data import (
     ExternalPresetData,
     ExternalRepositoryData,
     ExternalResourceData,
+    ExternalResourceValue,
     ExternalScheduleData,
     ExternalSensorData,
     ExternalSensorMetadata,
@@ -564,7 +565,7 @@ class ExternalResource:
         return self._external_resource_data.config_field_snaps
 
     @property
-    def configured_values(self) -> Dict[str, str]:
+    def configured_values(self) -> Dict[str, ExternalResourceValue]:
         return self._external_resource_data.configured_values
 
     @property

@@ -1894,6 +1894,12 @@ type ResourceDetails {
 type ConfiguredValue {
   key: String!
   value: String!
+  type: ConfiguredValueType!
+}
+
+enum ConfiguredValueType {
+  VALUE
+  ENV_VAR
 }
 
 type RepositoryConnection {
