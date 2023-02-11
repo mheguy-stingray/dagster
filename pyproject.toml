@@ -213,6 +213,9 @@ line-length = 100
 # Here we append to the defaults.
 select = [
 
+  # (useless expression): Expressions that aren't assigned to anything are typically bugs.
+  "B018",
+
   # (pydocstyle) Docstring-related rules. See above ignore section for selected
   # exclusions that sculpt the rules to fit Google-style docstrings. See:
   # https://github.com/charliermarsh/ruff#does-ruff-support-numpy--or-google-style-docstrings
