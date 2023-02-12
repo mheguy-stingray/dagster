@@ -21,6 +21,8 @@ from typing import (
     cast,
 )
 
+from typing_extensions import TypeAlias
+
 import dagster._check as check
 from dagster._annotations import public
 from dagster._core.definitions.resource_definition import ResourceDefinition
@@ -66,8 +68,8 @@ VALID_REPOSITORY_DATA_DICT_KEYS = {
     "jobs",
 }
 
-RepositoryLevelDefinition = TypeVar(
-    "RepositoryLevelDefinition",
+T_RepositoryLevelDefinition = TypeVar(
+    "T_RepositoryLevelDefinition",
     PipelineDefinition,
     JobDefinition,
     PartitionSetDefinition,
@@ -75,7 +77,7 @@ RepositoryLevelDefinition = TypeVar(
     SensorDefinition,
 )
 
-RepositoryListDefinition = Union[
+RepositoryListDefinition: TypeAlias = Union[
     "AssetsDefinition",
     "AssetGroup",
     GraphDefinition,
@@ -86,6 +88,11 @@ RepositoryListDefinition = Union[
     SourceAsset,
     UnresolvedAssetJobDefinition,
     "UnresolvedPartitionedAssetScheduleDefinition",
+]
+
+PendingRepositoryListDefinition: TypeAlias = Union[
+    RepositoryListDefinition,
+    "CacheableAssetsDefinition",
 ]
 
 
@@ -112,17 +119,17 @@ class RepositoryLoadData(
         )
 
 
-class _CacheingDefinitionIndex(Generic[RepositoryLevelDefinition]):
+class _CacheingDefinitionIndex(Generic[T_RepositoryLevelDefinition]):
     def __init__(
         self,
-        definition_class: Type[RepositoryLevelDefinition],
+        definition_class: Type[T_RepositoryLevelDefinition],
         definition_class_name: str,
         definition_kind: str,
         definitions: Mapping[
-            str, Union[RepositoryLevelDefinition, Callable[[], RepositoryLevelDefinition]]
+            str, Union[T_RepositoryLevelDefinition, Callable[[], T_RepositoryLevelDefinition]]
         ],
-        validation_fn: Callable[[RepositoryLevelDefinition], RepositoryLevelDefinition],
-        lazy_definitions_fn: Optional[Callable[[], Sequence[RepositoryLevelDefinition]]] = None,
+        validation_fn: Callable[[T_RepositoryLevelDefinition], T_RepositoryLevelDefinition],
+        lazy_definitions_fn: Optional[Callable[[], Sequence[T_RepositoryLevelDefinition]]] = None,
     ):
         """
         Args:
@@ -144,27 +151,27 @@ class _CacheingDefinitionIndex(Generic[RepositoryLevelDefinition]):
                 ),
             )
 
-        self._definition_class: Type[RepositoryLevelDefinition] = definition_class
+        self._definition_class: Type[T_RepositoryLevelDefinition] = definition_class
         self._definition_class_name = definition_class_name
         self._definition_kind = definition_kind
         self._validation_fn: Callable[
-            [RepositoryLevelDefinition], RepositoryLevelDefinition
+            [T_RepositoryLevelDefinition], T_RepositoryLevelDefinition
         ] = validation_fn
 
         self._definitions: Mapping[
-            str, Union[RepositoryLevelDefinition, Callable[[], RepositoryLevelDefinition]]
+            str, Union[T_RepositoryLevelDefinition, Callable[[], T_RepositoryLevelDefinition]]
         ] = definitions
-        self._definition_cache: Dict[str, RepositoryLevelDefinition] = {}
+        self._definition_cache: Dict[str, T_RepositoryLevelDefinition] = {}
         self._definition_names: Optional[Sequence[str]] = None
 
         self._lazy_definitions_fn: Callable[
-            [], Sequence[RepositoryLevelDefinition]
+            [], Sequence[T_RepositoryLevelDefinition]
         ] = lazy_definitions_fn or (lambda: [])
-        self._lazy_definitions: Optional[Sequence[RepositoryLevelDefinition]] = None
+        self._lazy_definitions: Optional[Sequence[T_RepositoryLevelDefinition]] = None
 
-        self._all_definitions: Optional[Sequence[RepositoryLevelDefinition]] = None
+        self._all_definitions: Optional[Sequence[T_RepositoryLevelDefinition]] = None
 
-    def _get_lazy_definitions(self) -> Sequence[RepositoryLevelDefinition]:
+    def _get_lazy_definitions(self) -> Sequence[T_RepositoryLevelDefinition]:
         if self._lazy_definitions is None:
             self._lazy_definitions = self._lazy_definitions_fn()
             for definition in self._lazy_definitions:
@@ -176,7 +183,7 @@ class _CacheingDefinitionIndex(Generic[RepositoryLevelDefinition]):
         if self._definition_names:
             return self._definition_names
 
-        lazy_names = []
+        lazy_names: List[str] = []
         for definition in self._get_lazy_definitions():
             strict_definition = self._definitions.get(definition.name)
             if strict_definition:
@@ -195,7 +202,7 @@ class _CacheingDefinitionIndex(Generic[RepositoryLevelDefinition]):
 
         return definition_name in self.get_definition_names()
 
-    def get_all_definitions(self) -> Sequence[RepositoryLevelDefinition]:
+    def get_all_definitions(self) -> Sequence[T_RepositoryLevelDefinition]:
         if self._all_definitions is not None:
             return self._all_definitions
 
@@ -207,7 +214,7 @@ class _CacheingDefinitionIndex(Generic[RepositoryLevelDefinition]):
         )
         return self._all_definitions
 
-    def get_definition(self, definition_name: str) -> RepositoryLevelDefinition:
+    def get_definition(self, definition_name: str) -> T_RepositoryLevelDefinition:
         check.str_param(definition_name, "definition_name")
 
         if not self.has_definition(definition_name):
@@ -239,7 +246,7 @@ class _CacheingDefinitionIndex(Generic[RepositoryLevelDefinition]):
             return definition
 
     def _validate_and_cache_definition(
-        self, definition: RepositoryLevelDefinition, definition_dict_key: str
+        self, definition: T_RepositoryLevelDefinition, definition_dict_key: str
     ):
         check.invariant(
             isinstance(definition, self._definition_class),
@@ -490,7 +497,7 @@ class RepositoryData(ABC):
     def get_assets_defs_by_key(self) -> Mapping[AssetKey, "AssetsDefinition"]:
         return {}
 
-    def load_all_definitions(self):
+    def load_all_definitions(self) -> None:
         # force load of all lazy constructed code artifacts
         self.get_all_pipelines()
         self.get_all_jobs()
@@ -1569,9 +1576,7 @@ class PendingRepositoryDefinition:
     def __init__(
         self,
         name: str,
-        repository_definitions: Sequence[
-            Union[RepositoryListDefinition, "CacheableAssetsDefinition"]
-        ],
+        repository_definitions: Sequence[PendingRepositoryListDefinition],
         description: Optional[str] = None,
         default_logger_defs: Optional[Mapping[str, LoggerDefinition]] = None,
         default_executor_def: Optional[ExecutorDefinition] = None,
