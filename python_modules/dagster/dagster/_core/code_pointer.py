@@ -10,7 +10,7 @@ import dagster._check as check
 from dagster._core.errors import DagsterImportError, DagsterInvariantViolationError
 from dagster._serdes import whitelist_for_serdes
 from dagster._seven import get_import_error_message, import_module_from_path
-from dagster._utils import alter_sys_path, frozenlist
+from dagster._utils import alter_sys_path
 
 
 class CodePointer(ABC):
@@ -301,10 +301,10 @@ class CustomPointer(
 
         # These are frozenlists, rather than lists, so that they can be hashed and the pointer
         # stored in the lru_cache on the repository and pipeline get_definition methods
-        reconstructable_args = frozenlist(reconstructable_args)
-        reconstructable_kwargs = frozenlist(
-            [frozenlist(reconstructable_kwarg) for reconstructable_kwarg in reconstructable_kwargs]
-        )
+        reconstructable_args = list(reconstructable_args)
+        reconstructable_kwargs = [
+            list(reconstructable_kwarg) for reconstructable_kwarg in reconstructable_kwargs
+        ]
 
         return super(CustomPointer, cls).__new__(
             cls,
@@ -312,6 +312,11 @@ class CustomPointer(
             reconstructable_args,
             reconstructable_kwargs,
         )
+
+    def __hash__(self) -> int:
+        kwargs = tuple((key, value) for key, value in self.reconstructable_kwargs)
+        args = tuple(self.reconstructable_args)
+        return hash((self.reconstructor_pointer, args, kwargs))
 
     def load_target(self) -> object:
         reconstructor = cast(Callable, self.reconstructor_pointer.load_target())

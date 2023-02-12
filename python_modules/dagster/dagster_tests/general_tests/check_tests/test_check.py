@@ -13,7 +13,7 @@ from dagster._check import (
     NotImplementedCheckError,
     ParameterCheckError,
 )
-from dagster._utils import frozendict, frozenlist
+from dagster._utils import frozendict
 
 
 @contextmanager
@@ -777,7 +777,6 @@ def test_opt_inst_param():
 
 def test_list_param():
     assert check.list_param([], "list_param") == []
-    assert check.list_param(frozenlist(), "list_param") == []
 
     assert check.list_param(["foo"], "list_param", of_type=str) == ["foo"]
 
@@ -813,7 +812,6 @@ def test_opt_list_param():
     assert check.opt_list_param(None, "list_param") == []
     assert check.opt_list_param(None, "list_param", of_type=str) == []
     assert check.opt_list_param([], "list_param") == []
-    assert check.opt_list_param(frozenlist(), "list_param") == []
     obj_list = [1]
     assert check.list_param(obj_list, "list_param") == obj_list
     assert check.opt_list_param(["foo"], "list_param", of_type=str) == ["foo"]
@@ -853,7 +851,6 @@ def test_opt_typed_list_param():
 def test_opt_nullable_list_param():
     assert check.opt_nullable_list_param(None, "list_param") is None
     assert check.opt_nullable_list_param([], "list_param") == []
-    assert check.opt_nullable_list_param(frozenlist(), "list_param") == []
     obj_list = [1]
     assert check.opt_nullable_list_param(obj_list, "list_param") == obj_list
 

@@ -39,7 +39,6 @@ from dagster._serdes import deserialize_as, serialize_dagster_namedtuple, whitel
 from dagster._serdes.ipc import IPCErrorMessage, ipc_write_stream, open_ipc_subprocess
 from dagster._utils import (
     find_free_port,
-    frozenlist,
     get_run_crash_explanation,
     safe_tempfile_path_unmanaged,
 )
@@ -237,7 +236,7 @@ class DagsterApiServer(DagsterApiServicer):
         self._serializable_load_error = None
 
         self._entry_point = (
-            frozenlist(check.sequence_param(entry_point, "entry_point", of_type=str))
+            list(check.sequence_param(entry_point, "entry_point", of_type=str))
             if entry_point is not None
             else DEFAULT_DAGSTER_ENTRY_POINT
         )

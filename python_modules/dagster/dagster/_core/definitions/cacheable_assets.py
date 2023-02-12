@@ -14,7 +14,7 @@ from dagster._core.definitions.metadata import MetadataUserInput
 from dagster._core.definitions.resource_definition import ResourceDefinition
 from dagster._core.definitions.resource_requirement import ResourceAddable
 from dagster._serdes import whitelist_for_serdes
-from dagster._utils import frozendict, frozenlist, make_readonly_value
+from dagster._utils import frozendict, make_readonly_value
 
 
 @whitelist_for_serdes
@@ -95,7 +95,7 @@ class AssetsDefinitionCacheableData(
             metadata_by_output_name=make_readonly_value(metadata_by_output_name)
             if metadata_by_output_name
             else None,
-            key_prefix=frozenlist(key_prefix) if key_prefix else None,
+            key_prefix=list(key_prefix) if key_prefix else None,
             can_subset=check.opt_bool_param(can_subset, "can_subset", default=False),
             extra_metadata=make_readonly_value(extra_metadata) if extra_metadata else None,
             freshness_policies_by_output_name=frozendict(freshness_policies_by_output_name)

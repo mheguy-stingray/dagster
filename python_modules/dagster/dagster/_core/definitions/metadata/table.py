@@ -3,7 +3,6 @@ from typing import Any, Mapping, NamedTuple, Optional, Sequence, Type, Union, ca
 import dagster._check as check
 from dagster._annotations import PublicAttr, experimental, public
 from dagster._serdes.serdes import DefaultNamedTupleSerializer, whitelist_for_serdes
-from dagster._utils import frozenlist
 
 # ########################
 # ##### TABLE RECORD
@@ -116,7 +115,7 @@ class TableSchema(
     ):
         return super(TableSchema, cls).__new__(
             cls,
-            columns=frozenlist(check.sequence_param(columns, "columns", of_type=TableColumn)),
+            columns=list(check.sequence_param(columns, "columns", of_type=TableColumn)),
             constraints=check.opt_inst_param(
                 constraints, "constraints", TableConstraints, default=_DEFAULT_TABLE_CONSTRAINTS
             ),
@@ -163,7 +162,7 @@ class TableConstraints(
     ):
         return super(TableConstraints, cls).__new__(
             cls,
-            other=frozenlist(check.sequence_param(other, "other", of_type=str)),
+            other=list(check.sequence_param(other, "other", of_type=str)),
         )
 
 
@@ -261,7 +260,7 @@ class TableColumnConstraints(
             cls,
             nullable=check.bool_param(nullable, "nullable"),
             unique=check.bool_param(unique, "unique"),
-            other=frozenlist(check.opt_sequence_param(other, "other")),
+            other=list(check.opt_sequence_param(other, "other")),
         )
 
 
