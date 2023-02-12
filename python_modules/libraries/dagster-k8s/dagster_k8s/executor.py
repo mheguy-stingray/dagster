@@ -21,7 +21,6 @@ from dagster._core.executor.step_delegating import (
     StepHandler,
     StepHandlerContext,
 )
-from dagster._utils import frozentags
 from dagster._utils.merger import merge_dicts
 
 from dagster_k8s.launcher import K8sRunLauncher
@@ -224,7 +223,7 @@ class K8sStepHandler(StepHandler):
             raise Exception("No image included in either executor config or the job")
 
         user_defined_k8s_config = get_user_defined_k8s_config(
-            frozentags(step_handler_context.step_tags[step_key])
+            step_handler_context.step_tags[step_key]
         )
 
         job = construct_dagster_k8s_job(
