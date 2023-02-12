@@ -16,14 +16,13 @@ from typing import (
     Optional,
     Sequence,
     Set,
-    TypeVar,
     Union,
     cast,
 )
 
 import pendulum
 from dateutil.relativedelta import relativedelta
-from typing_extensions import TypeAlias
+from typing_extensions import TypeAlias, TypeVar
 
 import dagster._check as check
 from dagster._annotations import PublicAttr, public
@@ -65,7 +64,7 @@ from .utils import check_valid_name, validate_tags
 
 DEFAULT_DATE_FORMAT = "%Y-%m-%d"
 
-T = TypeVar("T")
+T = TypeVar("T", default=object)
 
 
 RawPartitionFunction: TypeAlias = Union[
