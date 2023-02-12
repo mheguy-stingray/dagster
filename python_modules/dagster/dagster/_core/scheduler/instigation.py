@@ -1,12 +1,17 @@
+# pyright: strict
+
 from enum import Enum
 from inspect import Parameter
 from typing import Any, Dict, List, Mapping, NamedTuple, Optional, Sequence, Type, Union
+
+from typing_extensions import TypeAlias
 
 import dagster._check as check
 
 # re-export
 from dagster._core.definitions.run_request import (
     InstigatorType as InstigatorType,
+    SkipReason as SkipReason,
 )
 from dagster._core.definitions.selector import InstigatorSelector, RepositorySelector
 from dagster._core.host_representation.origin import ExternalInstigatorOrigin
@@ -22,6 +27,8 @@ from dagster._serdes.serdes import (
 )
 from dagster._utils.error import SerializableErrorInfo
 from dagster._utils.merger import merge_dicts
+
+InstigatorData: TypeAlias = Union["ScheduleInstigatorData", "SensorInstigatorData"]
 
 
 @whitelist_for_serdes
@@ -90,7 +97,7 @@ class ScheduleInstigatorData(
     def __new__(
         cls, cron_schedule: Union[str, Sequence[str]], start_timestamp: Optional[float] = None
     ):
-        cron_schedule = check.inst_param(cron_schedule, "cron_schedule", (str, Sequence))
+        cron_schedule = check.inst_param(cron_schedule, "cron_schedule", (str, Sequence[str]))
         if not isinstance(cron_schedule, str):
             cron_schedule = check.sequence_param(cron_schedule, "cron_schedule", of_type=str)
 
@@ -111,8 +118,8 @@ ScheduleJobData = ScheduleInstigatorData
 
 def check_instigator_data(
     instigator_type: InstigatorType,
-    instigator_data: Optional[Union[ScheduleInstigatorData, SensorInstigatorData]],
-):
+    instigator_data: Optional[InstigatorData],
+) -> Optional[InstigatorData]:
     if instigator_type == InstigatorType.SCHEDULE:
         check.inst_param(instigator_data, "instigator_data", ScheduleInstigatorData)
     elif instigator_type == InstigatorType.SENSOR:
@@ -126,16 +133,16 @@ def check_instigator_data(
     return instigator_data
 
 
-class InstigatorStateSerializer(DefaultNamedTupleSerializer):
+class InstigatorStateSerializer(DefaultNamedTupleSerializer["InstigatorState"]):
     @classmethod
     def value_from_storage_dict(
         cls,
         storage_dict: Dict[str, Any],
-        klass: Type,
+        klass: Type["InstigatorState"],
         args_for_class: Mapping[str, Parameter],
         whitelist_map: WhitelistMap,
         descent_path: str,
-    ) -> NamedTuple:
+    ) -> "InstigatorState":
         klass_kwargs = {}
         for key, value in storage_dict.items():
             unpacked = unpack_value(
@@ -150,12 +157,12 @@ class InstigatorStateSerializer(DefaultNamedTupleSerializer):
                 # For backcompat, we store instigator_data as job_specific_data
                 klass_kwargs["instigator_data"] = unpacked
 
-        return klass(**klass_kwargs)
+        return klass(**klass_kwargs)  # type: ignore  # (namedtuple)
 
     @classmethod
     def value_to_storage_dict(
         cls,
-        value: NamedTuple,
+        value: "InstigatorState",
         whitelist_map: WhitelistMap,
         descent_path: str,
     ) -> Dict[str, Any]:
@@ -184,7 +191,7 @@ class InstigatorState(
             ("origin", ExternalInstigatorOrigin),
             ("instigator_type", InstigatorType),
             ("status", InstigatorStatus),
-            ("instigator_data", Optional[Union[ScheduleInstigatorData, SensorInstigatorData]]),
+            ("instigator_data", Optional[InstigatorData]),
         ],
     )
 ):
@@ -193,7 +200,7 @@ class InstigatorState(
         origin: ExternalInstigatorOrigin,
         instigator_type: InstigatorType,
         status: InstigatorStatus,
-        instigator_data: Optional[Union[ScheduleInstigatorData, SensorInstigatorData]] = None,
+        instigator_data: Optional[InstigatorData] = None,
     ):
         return super(InstigatorState, cls).__new__(
             cls,
@@ -204,19 +211,19 @@ class InstigatorState(
         )
 
     @property
-    def is_running(self):
+    def is_running(self) -> bool:
         return self.status != InstigatorStatus.STOPPED
 
     @property
-    def name(self):
+    def name(self) -> str:
         return self.origin.instigator_name
 
     @property
-    def instigator_name(self):
+    def instigator_name(self) -> str:
         return self.origin.instigator_name
 
     @property
-    def repository_origin_id(self):
+    def repository_origin_id(self) -> str:
         return self.origin.external_repository_origin.get_id()
 
     @property
@@ -227,15 +234,15 @@ class InstigatorState(
         )
 
     @property
-    def repository_selector_id(self):
+    def repository_selector_id(self) -> str:
         return create_snapshot_id(self.repository_selector)
 
     @property
-    def instigator_origin_id(self):
+    def instigator_origin_id(self) -> str:
         return self.origin.get_id()
 
     @property
-    def selector_id(self):
+    def selector_id(self) -> str:
         return create_snapshot_id(
             InstigatorSelector(
                 self.origin.external_repository_origin.repository_location_origin.location_name,
@@ -244,7 +251,7 @@ class InstigatorState(
             )
         )
 
-    def with_status(self, status):
+    def with_status(self, status: InstigatorStatus) -> "InstigatorState":
         check.inst_param(status, "status", InstigatorStatus)
         return InstigatorState(
             self.origin,
@@ -253,7 +260,7 @@ class InstigatorState(
             instigator_data=self.instigator_data,
         )
 
-    def with_data(self, instigator_data):
+    def with_data(self, instigator_data: InstigatorData) -> "InstigatorState":
         check_instigator_data(self.instigator_type, instigator_data)
         return InstigatorState(
             self.origin,
@@ -281,16 +288,16 @@ register_serdes_enum_fallbacks({"JobTickStatus": TickStatus})
 JobTickStatus = TickStatus
 
 
-class TickSerializer(DefaultNamedTupleSerializer):
+class TickSerializer(DefaultNamedTupleSerializer["InstigatorTick"]):
     @classmethod
     def value_from_storage_dict(
         cls,
         storage_dict: Dict[str, Any],
-        klass: Type,
+        klass: Type["InstigatorTick"],
         args_for_class: Mapping[str, Parameter],
         whitelist_map: WhitelistMap,
         descent_path: str,
-    ) -> NamedTuple:
+    ) -> "InstigatorTick":
         klass_kwargs = {}
         for key, value in storage_dict.items():
             unpacked = unpack_value(
@@ -302,12 +309,12 @@ class TickSerializer(DefaultNamedTupleSerializer):
                 # For backcompat, we store tick_data as job_tick_data
                 klass_kwargs["tick_data"] = unpacked
 
-        return klass(**klass_kwargs)
+        return klass(**klass_kwargs)  # type: ignore  # (namedtuple)
 
     @classmethod
     def value_to_storage_dict(
         cls,
-        value: NamedTuple,
+        value: "InstigatorTick",
         whitelist_map: WhitelistMap,
         descent_path: str,
     ) -> Dict[str, Any]:
@@ -335,72 +342,72 @@ class InstigatorTick(NamedTuple("_InstigatorTick", [("tick_id", int), ("tick_dat
             check.inst_param(tick_data, "tick_data", TickData),
         )
 
-    def with_status(self, status, **kwargs):
+    def with_status(self, status: TickStatus, **kwargs: object):
         check.inst_param(status, "status", TickStatus)
         return self._replace(tick_data=self.tick_data.with_status(status, **kwargs))
 
-    def with_reason(self, skip_reason):
+    def with_reason(self, skip_reason: str) -> "InstigatorTick":
         check.opt_str_param(skip_reason, "skip_reason")
         return self._replace(tick_data=self.tick_data.with_reason(skip_reason))
 
-    def with_run_info(self, run_id=None, run_key=None):
+    def with_run_info(self, run_id: Optional[str] = None, run_key: Optional[str] = None):
         return self._replace(tick_data=self.tick_data.with_run_info(run_id, run_key))
 
-    def with_cursor(self, cursor):
+    def with_cursor(self, cursor: Optional[str]) -> "InstigatorTick":
         return self._replace(tick_data=self.tick_data.with_cursor(cursor))
 
-    def with_origin_run(self, origin_run_id):
+    def with_origin_run(self, origin_run_id: str) -> "InstigatorTick":
         return self._replace(tick_data=self.tick_data.with_origin_run(origin_run_id))
 
-    def with_log_key(self, log_key):
+    def with_log_key(self, log_key: Sequence[str]) -> "InstigatorTick":
         return self._replace(tick_data=self.tick_data.with_log_key(log_key))
 
     @property
-    def instigator_origin_id(self):
+    def instigator_origin_id(self) -> str:
         return self.tick_data.instigator_origin_id
 
     @property
-    def selector_id(self):
+    def selector_id(self) -> Optional[str]:
         return self.tick_data.selector_id
 
     @property
-    def instigator_name(self):
+    def instigator_name(self) -> str:
         return self.tick_data.instigator_name
 
     @property
-    def instigator_type(self):
+    def instigator_type(self) -> InstigatorType:
         return self.tick_data.instigator_type
 
     @property
-    def timestamp(self):
+    def timestamp(self) -> float:
         return self.tick_data.timestamp
 
     @property
-    def status(self):
+    def status(self) -> TickStatus:
         return self.tick_data.status
 
     @property
-    def run_ids(self):
+    def run_ids(self) -> Sequence[str]:
         return self.tick_data.run_ids
 
     @property
-    def run_keys(self):
+    def run_keys(self) -> Sequence[str]:
         return self.tick_data.run_keys
 
     @property
-    def error(self):
+    def error(self) -> Optional[SerializableErrorInfo]:
         return self.tick_data.error
 
     @property
-    def skip_reason(self):
+    def skip_reason(self) -> Optional[str]:
         return self.tick_data.skip_reason
 
     @property
-    def cursor(self):
+    def cursor(self) -> Optional[str]:
         return self.tick_data.cursor
 
     @property
-    def origin_run_ids(self):
+    def origin_run_ids(self) -> Optional[Sequence[str]]:
         return self.tick_data.origin_run_ids
 
     @property
@@ -433,16 +440,16 @@ register_serdes_tuple_fallbacks({"JobTick": InstigatorTick})
 JobTick = InstigatorTick
 
 
-class TickDataSerializer(DefaultNamedTupleSerializer):
+class TickDataSerializer(DefaultNamedTupleSerializer["TickData"]):
     @classmethod
     def value_from_storage_dict(
         cls,
         storage_dict: Dict[str, Any],
-        klass: Type,
+        klass: Type["TickData"],
         args_for_class: Mapping[str, Parameter],
         whitelist_map: WhitelistMap,
         descent_path: str,
-    ) -> NamedTuple:
+    ) -> "TickData":
         klass_kwargs = {}
         for key, value in storage_dict.items():
             unpacked = unpack_value(
@@ -460,12 +467,12 @@ class TickDataSerializer(DefaultNamedTupleSerializer):
                 # For backcompat, we store instigator_type as job_type
                 klass_kwargs["instigator_type"] = unpacked
 
-        return klass(**klass_kwargs)
+        return klass(**klass_kwargs)  # type: ignore  # (namedtuple)
 
     @classmethod
     def value_to_storage_dict(
         cls,
-        value: NamedTuple,
+        value: "TickData",
         whitelist_map: WhitelistMap,
         descent_path: str,
     ) -> Dict[str, Any]:
@@ -563,7 +570,13 @@ class TickData(
             log_key=log_key,
         )
 
-    def with_status(self, status, error=None, timestamp=None, failure_count=None):
+    def with_status(
+        self,
+        status: TickStatus,
+        error: Optional[SerializableErrorInfo] = None,
+        timestamp: Optional[float] = None,
+        failure_count: Optional[int] = None,
+    ) -> "TickData":
         return TickData(
             **merge_dicts(
                 self._asdict(),
@@ -578,7 +591,9 @@ class TickData(
             )
         )
 
-    def with_run_info(self, run_id=None, run_key=None):
+    def with_run_info(
+        self, run_id: Optional[str] = None, run_key: Optional[str] = None
+    ) -> "TickData":
         check.opt_str_param(run_id, "run_id")
         check.opt_str_param(run_key, "run_key")
         return TickData(
@@ -599,7 +614,7 @@ class TickData(
             )
         )
 
-    def with_failure_count(self, failure_count):
+    def with_failure_count(self, failure_count: int) -> "TickData":
         return TickData(
             **merge_dicts(
                 self._asdict(),
@@ -609,19 +624,19 @@ class TickData(
             )
         )
 
-    def with_reason(self, skip_reason):
+    def with_reason(self, skip_reason: Optional[str]) -> "TickData":
         return TickData(
             **merge_dicts(
                 self._asdict(), {"skip_reason": check.opt_str_param(skip_reason, "skip_reason")}
             )
         )
 
-    def with_cursor(self, cursor):
+    def with_cursor(self, cursor: Optional[str]) -> "TickData":
         return TickData(
             **merge_dicts(self._asdict(), {"cursor": check.opt_str_param(cursor, "cursor")})
         )
 
-    def with_origin_run(self, origin_run_id):
+    def with_origin_run(self, origin_run_id: str) -> "TickData":
         check.str_param(origin_run_id, "origin_run_id")
         return TickData(
             **merge_dicts(
@@ -630,7 +645,7 @@ class TickData(
             )
         )
 
-    def with_log_key(self, log_key):
+    def with_log_key(self, log_key: Sequence[str]) -> "TickData":
         return TickData(
             **merge_dicts(
                 self._asdict(),
@@ -644,7 +659,13 @@ register_serdes_tuple_fallbacks({"JobTickData": TickData})
 JobTickData = TickData
 
 
-def _validate_tick_args(instigator_type, status, run_ids=None, error=None, skip_reason=None):
+def _validate_tick_args(
+    instigator_type: InstigatorType,
+    status: TickStatus,
+    run_ids: Optional[Sequence[str]] = None,
+    error: Optional[SerializableErrorInfo] = None,
+    skip_reason: Optional[str] = None,
+) -> None:
     check.inst_param(instigator_type, "instigator_type", InstigatorType)
     check.inst_param(status, "status", TickStatus)
 
