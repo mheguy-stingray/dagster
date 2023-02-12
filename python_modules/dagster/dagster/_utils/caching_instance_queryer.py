@@ -37,7 +37,6 @@ from dagster._core.storage.pipeline_run import (
     RunsFilter,
 )
 from dagster._core.storage.tags import PARTITION_NAME_TAG
-from dagster._core.utils import frozendict
 from dagster._utils.cached_method import cached_method
 from dagster._utils.merger import merge_dicts
 
@@ -592,7 +591,7 @@ class CachingInstanceQueryer(DynamicPartitionsStore):
                 asset_key=parent_key,
                 record_id=parent_record.storage_id if parent_record else None,
                 record_timestamp=parent_record.event_log_entry.timestamp if parent_record else None,
-                record_tags=frozendict(
+                record_tags=dict(
                     (
                         parent_record.asset_materialization.tags
                         if parent_record and parent_record.asset_materialization
@@ -662,7 +661,7 @@ class CachingInstanceQueryer(DynamicPartitionsStore):
             asset_key=record.asset_key,
             record_id=record.storage_id,
             record_timestamp=record.event_log_entry.timestamp,
-            record_tags=frozendict(record.asset_materialization.tags or {}),
+            record_tags=(record.asset_materialization.tags or {}),
         )
         if asset_graph.freshness_policies_by_key.get(
             record.asset_key
@@ -703,18 +702,20 @@ class CachingInstanceQueryer(DynamicPartitionsStore):
         # materializations will (in general) read from the current state of the data
         if asset_key not in planned_keys or asset_key in materialized_keys:
             latest_record = self.get_latest_materialization_record(asset_key)
-            latest_used_data = self._calculate_used_data(
-                asset_graph=asset_graph,
-                asset_key=asset_key,
-                record_id=latest_record.storage_id if latest_record else None,
-                record_timestamp=latest_record.event_log_entry.timestamp if latest_record else None,
-                record_tags=frozendict(
-                    (
+            latest_used_data = (
+                self._calculate_used_data(
+                    asset_graph=asset_graph,
+                    asset_key=asset_key,
+                    record_id=latest_record.storage_id if latest_record else None,
+                    record_timestamp=latest_record.event_log_entry.timestamp
+                    if latest_record
+                    else None,
+                    record_tags=(
                         latest_record.asset_materialization.tags
                         if latest_record and latest_record.asset_materialization
                         else None
                     )
-                    or {}
+                    or {},
                 ),
             )
             return {

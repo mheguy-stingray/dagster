@@ -13,7 +13,6 @@ from dagster._check import (
     NotImplementedCheckError,
     ParameterCheckError,
 )
-from dagster._utils import frozendict
 
 
 @contextmanager
@@ -217,7 +216,6 @@ class AlsoWrong:
 
 DICT_TEST_CASES = [
     (dict(obj={}), True),
-    (dict(obj=frozendict()), True),
     (dict(obj={"a": 2}), True),
     (dict(obj=None), False),
     (dict(obj=0), False),
@@ -323,7 +321,6 @@ def test_opt_dict_param_with_type():
 def test_opt_dict_param():
     assert check.opt_dict_param(None, "opt_dict_param") == {}
     assert check.opt_dict_param({}, "opt_dict_param") == {}
-    assert check.opt_dict_param(frozendict(), "opt_dict_param") == {}
     ddict = {"a": 2}
     assert check.opt_dict_param(ddict, "opt_dict_param") == ddict
 
@@ -346,7 +343,6 @@ def test_opt_dict_param():
 def test_opt_nullable_dict_param():
     assert check.opt_nullable_dict_param(None, "opt_nullable_dict_param") is None
     assert check.opt_nullable_dict_param({}, "opt_nullable_dict_param") == {}
-    assert check.opt_nullable_dict_param(frozendict(), "opt_nullable_dict_param") == {}
     ddict = {"a": 2}
     assert check.opt_nullable_dict_param(ddict, "opt_nullable_dict_param") == ddict
 

@@ -31,7 +31,6 @@ from dagster._core.definitions.metadata.table import (
 )
 from dagster._core.execution.results import OpExecutionResult, PipelineExecutionResult
 from dagster._legacy import execute_pipeline, pipeline, solid
-from dagster._utils import frozendict
 
 
 def solid_events_for_type(
@@ -231,23 +230,21 @@ def test_table_metadata_value_schema_inference():
     ]
 
 
-bad_values = frozendict(
-    {
-        "table_schema": {"columns": False, "constraints": False},
-        "table_column": {
-            "name": False,
-            "type": False,
-            "description": False,
-            "constraints": False,
-        },
-        "table_constraints": {"other": False},
-        "table_column_constraints": {
-            "nullable": "foo",
-            "unique": "foo",
-            "other": False,
-        },
-    }
-)
+bad_values = {
+    "table_schema": {"columns": False, "constraints": False},
+    "table_column": {
+        "name": False,
+        "type": False,
+        "description": False,
+        "constraints": False,
+    },
+    "table_constraints": {"other": False},
+    "table_column_constraints": {
+        "nullable": "foo",
+        "unique": "foo",
+        "other": False,
+    },
+}
 
 
 def test_table_column_keys():
