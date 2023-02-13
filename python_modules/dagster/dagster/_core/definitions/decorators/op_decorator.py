@@ -17,6 +17,8 @@ from .solid_decorator import DecoratedOpFunction, NoContextDecoratedOpFunction
 if TYPE_CHECKING:
     from ..op_definition import OpDefinition
 
+CODE_ORIGIN_TAG_NAME = "__code_origin"
+
 
 class _Op:
     def __init__(
@@ -57,14 +59,12 @@ class _Op:
         if not self.name:
             self.name = fn.__name__
 
-        tags = self.tags or {}
-
         # Attach code origin to op tags
         cwd = os.getcwd()
         origin_file = os.path.join(cwd, inspect.getsourcefile(fn))
         origin_line = inspect.getsourcelines(fn)[1]
 
-        tags = {**(tags), "__code_origin": f"{origin_file}:{origin_line}"}
+        tags = {**(self.tags or {}), CODE_ORIGIN_TAG_NAME: f"{origin_file}:{origin_line}"}
 
         compute_fn = (
             DecoratedOpFunction(decorated_fn=fn)
