@@ -130,6 +130,7 @@ def execute_k8s_job(
     pod_spec_config: Optional[Dict[str, Any]] = None,
     job_metadata: Optional[Dict[str, Any]] = None,
     job_spec_config: Optional[Dict[str, Any]] = None,
+    mock_k8s_client: Optional[DagsterKubernetesClient] = None,
 ):
     """
     This function is a utility for executing a Kubernetes job from within a Dagster op.
@@ -202,7 +203,7 @@ def execute_k8s_job(
         context.instance.run_launcher
         if isinstance(context.instance.run_launcher, K8sRunLauncher)
         else None,
-        include_run_tags=True,
+        include_run_tags=False,
     )
 
     container_config = container_config.copy() if container_config else {}
@@ -256,7 +257,7 @@ def execute_k8s_job(
         resources=container_context.resources,
     )
 
-    job_name = get_k8s_job_name(context.run_id, context.op.name)
+    job_name = get_k8s_job_name(context.run_id, context.op_name)
 
     retry_number = context.retry_number
     if retry_number > 0:
@@ -271,7 +272,7 @@ def execute_k8s_job(
         user_defined_k8s_config=user_defined_k8s_config,
         labels={
             "dagster/job": context.pipeline_run.pipeline_name,
-            "dagster/op": context.op.name,
+            "dagster/op": context.op_name,
             "dagster/run-id": context.pipeline_run.run_id,
         },
     )
@@ -281,14 +282,13 @@ def execute_k8s_job(
     else:
         kubernetes.config.load_kube_config(kubeconfig_file)
 
-    # changing this to be able to be passed in will allow for unit testing
-    api_client = DagsterKubernetesClient.production_client()
+    api_client = mock_k8s_client or DagsterKubernetesClient.production_client()
 
     context.log.info(f"Creating Kubernetes job {job_name} in namespace {namespace}...")
 
     start_time = time.time()
 
-    api_client.batch_api.create_namespaced_job(namespace, job)
+    api_client.batch_api.create_namespaced_job(namespace=namespace, body=job)
 
     context.log.info("Waiting for Kubernetes job to finish...")
 

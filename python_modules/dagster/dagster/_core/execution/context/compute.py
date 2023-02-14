@@ -254,6 +254,15 @@ class OpExecutionContext(AbstractComputeExecutionContext):
         return self._step_execution_context.pipeline_def.get_solid(self.solid_handle)
 
     @property
+    def op_name(self) -> str:
+        """Solid: The current op object.
+
+        :meta private:
+
+        """
+        return self.solid.name
+
+    @property
     def op(self) -> Node:
         """Solid: The current op object.
 

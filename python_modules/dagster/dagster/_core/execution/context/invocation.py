@@ -72,12 +72,16 @@ class UnboundOpExecutionContext(OpExecutionContext):
         instance: Optional[DagsterInstance],
         partition_key: Optional[str],
         mapping_key: Optional[str],
-    ):  # pylint: disable=super-init-not-called
+        run: Optional[DagsterRun],
+        op_name: Optional[str],
+    ) -> None:  # pylint: disable=super-init-not-called
         from dagster._core.execution.api import ephemeral_instance_if_missing
         from dagster._core.execution.context_creation_pipeline import initialize_console_manager
 
         self._solid_config = solid_config
         self._mapping_key = mapping_key
+        self._run = run
+        self._op_name = op_name
 
         self._instance_provided = (
             check.opt_inst_param(instance, "instance", DagsterInstance) is not None
@@ -138,7 +142,7 @@ class UnboundOpExecutionContext(OpExecutionContext):
 
     @property
     def pipeline_run(self) -> DagsterRun:
-        raise DagsterInvalidPropertyError(_property_msg("pipeline_run", "property"))
+        return check.not_none(self._run)
 
     @property
     def instance(self) -> DagsterInstance:
@@ -168,11 +172,11 @@ class UnboundOpExecutionContext(OpExecutionContext):
     @property
     def run_id(self) -> str:
         """str: Hard-coded value to indicate that we are directly invoking solid."""
-        return "EPHEMERAL"
+        return self._run.run_id if self._run else "EPHEMERAL"
 
     @property
-    def run_config(self) -> dict:
-        raise DagsterInvalidPropertyError(_property_msg("run_config", "property"))
+    def run_config(self) -> Mapping[str, object]:
+        return check.not_none(self._run).run_config
 
     @property
     def pipeline_def(self) -> PipelineDefinition:
@@ -180,7 +184,7 @@ class UnboundOpExecutionContext(OpExecutionContext):
 
     @property
     def pipeline_name(self) -> str:
-        raise DagsterInvalidPropertyError(_property_msg("pipeline_name", "property"))
+        return check.not_none(self._run).pipeline_name
 
     @property
     def mode_def(self) -> ModeDefinition:
@@ -198,6 +202,10 @@ class UnboundOpExecutionContext(OpExecutionContext):
     @property
     def solid(self) -> Node:
         raise DagsterInvalidPropertyError(_property_msg("solid", "property"))
+
+    @property
+    def op_name(self) -> str:
+        return check.not_none(self._op_name)
 
     @property
     def op_def(self) -> OpDefinition:
@@ -262,6 +270,8 @@ class UnboundOpExecutionContext(OpExecutionContext):
             output_metadata=self._output_metadata,
             mapping_key=self._mapping_key,
             partition_key=self._partition_key,
+            run=self._run,
+            op_name=self._op_name,
         )
 
     def get_events(self) -> Sequence[UserEvent]:
@@ -309,6 +319,10 @@ class UnboundOpExecutionContext(OpExecutionContext):
     def get_mapping_key(self) -> Optional[str]:
         return self._mapping_key
 
+    @property
+    def retry_number(self) -> int:
+        return 0
+
 
 def _validate_resource_requirements(
     resource_defs: Mapping[str, ResourceDefinition], op_def: OpDefinition
@@ -342,6 +356,8 @@ class BoundOpExecutionContext(OpExecutionContext):
     _output_metadata: Dict[str, Any]
     _mapping_key: Optional[str]
     _partition_key: Optional[str]
+    _run: Optional[DagsterRun]
+    _op_name: Optional[str]
 
     def __init__(
         self,
@@ -359,6 +375,8 @@ class BoundOpExecutionContext(OpExecutionContext):
         output_metadata: Dict[str, Any],
         mapping_key: Optional[str],
         partition_key: Optional[str],
+        run: Optional[DagsterRun],
+        op_name: Optional[str],
     ):
         self._op_def = op_def
         self._op_config = op_config
@@ -375,6 +393,8 @@ class BoundOpExecutionContext(OpExecutionContext):
         self._output_metadata = output_metadata
         self._mapping_key = mapping_key
         self._partition_key = partition_key
+        self._run = run
+        self._op_name = op_name
 
     @property
     def solid_config(self) -> Any:
@@ -386,7 +406,7 @@ class BoundOpExecutionContext(OpExecutionContext):
 
     @property
     def pipeline_run(self) -> DagsterRun:
-        raise DagsterInvalidPropertyError(_property_msg("pipeline_run", "property"))
+        return check.not_none(self._run)
 
     @property
     def instance(self) -> DagsterInstance:
@@ -416,10 +436,13 @@ class BoundOpExecutionContext(OpExecutionContext):
     @property
     def run_id(self) -> str:
         """str: Hard-coded value to indicate that we are directly invoking solid."""
-        return "EPHEMERAL"
+        return self._run.run_id if self._run else "EPHEMERAL"
 
     @property
     def run_config(self) -> Mapping[str, object]:
+        if self._run:
+            return self._run.run_config
+
         run_config: Dict[str, object] = {}
         if self._op_config:
             run_config["solids"] = {self._op_def.name: {"config": self._op_config}}
@@ -432,7 +455,7 @@ class BoundOpExecutionContext(OpExecutionContext):
 
     @property
     def pipeline_name(self) -> str:
-        raise DagsterInvalidPropertyError(_property_msg("pipeline_name", "property"))
+        return check.not_none(self._run).pipeline_name
 
     @property
     def mode_def(self) -> ModeDefinition:
@@ -450,6 +473,10 @@ class BoundOpExecutionContext(OpExecutionContext):
     @property
     def solid(self) -> Node:
         raise DagsterInvalidPropertyError(_property_msg("solid", "property"))
+
+    @property
+    def op_name(self) -> str:
+        return check.not_none(self._op_name)
 
     @property
     def op_def(self) -> OpDefinition:
@@ -607,6 +634,8 @@ def build_op_context(
     config: Any = None,
     partition_key: Optional[str] = None,
     mapping_key: Optional[str] = None,
+    run: Optional[DagsterRun] = None,
+    op_name: Optional[str] = None,
 ) -> OpExecutionContext:
     """Builds op execution context from provided parameters.
 
@@ -624,6 +653,9 @@ def build_op_context(
         mapping_key (Optional[str]): A key representing the mapping key from an upstream dynamic
             output. Can be accessed using ``context.get_mapping_key()``.
         partition_key (Optional[str]): String value representing partition key to execute with.
+        run (Optional[str]): The run in which the op is invoked (provided for mocking purposes).
+        op_name (Optional[str]): The name of the op being invoked (provided for mocking purposes).
+
 
     Examples:
         .. code-block:: python
@@ -648,6 +680,8 @@ def build_op_context(
         instance=instance,
         partition_key=partition_key,
         mapping_key=mapping_key,
+        run=run,
+        op_name=op_name,
     )
 
 
@@ -659,6 +693,8 @@ def build_solid_context(
     config: Any = None,
     partition_key: Optional[str] = None,
     mapping_key: Optional[str] = None,
+    run: Optional[DagsterRun] = None,
+    op_name: Optional[str] = None,
 ) -> UnboundOpExecutionContext:
     """Builds solid execution context from provided parameters.
 
@@ -704,4 +740,6 @@ def build_solid_context(
         instance=check.opt_inst_param(instance, "instance", DagsterInstance),
         partition_key=check.opt_str_param(partition_key, "partition_key"),
         mapping_key=check.opt_str_param(mapping_key, "mapping_key"),
+        run=check.opt_inst_param(run, "run", DagsterRun),
+        op_name=check.opt_str_param(op_name, "op_name"),
     )

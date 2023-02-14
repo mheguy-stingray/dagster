@@ -488,9 +488,7 @@ def test_step_handler_with_container_context(
         assert envs["BAZ_TEST"] == "blergh"
 
 
-def test_step_raw_k8s_config_inheritance(
-    k8s_run_launcher_instance, python_origin_with_container_context
-):
+def test_step_raw_k8s_config_inheritance(k8s_run_launcher_instance):
     container_context_config = {
         "k8s": {
             "run_k8s_config": {"container_config": {"volume_mounts": OTHER_VOLUME_MOUNTS_TAGS}},
