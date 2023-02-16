@@ -126,11 +126,11 @@ if TYPE_CHECKING:
 
 
 def _check_run_equality(
-    pipeline_run: DagsterRun, candidate_run: DagsterRun
+    run: DagsterRun, candidate_run: DagsterRun
 ) -> Mapping[str, Tuple[Any, Any]]:
     field_diff = {}
-    for field in pipeline_run._fields:
-        expected_value = getattr(pipeline_run, field)
+    for field in run._fields:
+        expected_value = getattr(run, field)
         candidate_value = getattr(candidate_run, field)
         if expected_value != candidate_value:
             field_diff[field] = (expected_value, candidate_value)
@@ -1133,14 +1133,14 @@ class DagsterInstance(DynamicPartitionsStore):
 
         return execution_plan_snapshot_id
 
-    def _log_asset_materialization_planned_events(self, pipeline_run, execution_plan_snapshot):
+    def _log_asset_materialization_planned_events(self, run, execution_plan_snapshot):
         from dagster._core.events import (
             AssetMaterializationPlannedData,
             DagsterEvent,
             DagsterEventType,
         )
 
-        pipeline_name = pipeline_run.pipeline_name
+        pipeline_name = run.pipeline_name
 
         for step in execution_plan_snapshot.steps:
             if step.key in execution_plan_snapshot.step_keys_to_execute:
@@ -1157,7 +1157,7 @@ class DagsterInstance(DynamicPartitionsStore):
                             ),
                             event_specific_data=AssetMaterializationPlannedData(asset_key),
                         )
-                        self.report_dagster_event(event, pipeline_run.run_id, logging.DEBUG)
+                        self.report_dagster_event(event, run.run_id, logging.DEBUG)
 
     def create_run(
         self,
@@ -1279,7 +1279,7 @@ class DagsterInstance(DynamicPartitionsStore):
         )
         check.opt_inst_param(pipeline_code_origin, "pipeline_code_origin", PipelinePythonOrigin)
 
-        pipeline_run = self._construct_run_with_snapshots(
+        run = self._construct_run_with_snapshots(
             pipeline_name=pipeline_name,
             run_id=run_id,
             run_config=run_config,
@@ -1299,12 +1299,12 @@ class DagsterInstance(DynamicPartitionsStore):
             pipeline_code_origin=pipeline_code_origin,
         )
 
-        pipeline_run = self._run_storage.add_run(pipeline_run)
+        run = self._run_storage.add_run(run)
 
         if execution_plan_snapshot:
-            self._log_asset_materialization_planned_events(pipeline_run, execution_plan_snapshot)
+            self._log_asset_materialization_planned_events(run, execution_plan_snapshot)
 
-        return pipeline_run
+        return run
 
     def create_reexecuted_run(
         self,
@@ -1423,12 +1423,12 @@ class DagsterInstance(DynamicPartitionsStore):
         # PipelineRun.
         #
         # The try-except DagsterRunAlreadyExists block handles the race when multiple "root" tasks
-        # simultaneously execute self._run_storage.add_run(pipeline_run). When this happens, only
+        # simultaneously execute self._run_storage.add_run(run). When this happens, only
         # one task succeeds in creating the run, while the others get DagsterRunAlreadyExists
         # error; at this point, the failed tasks try again to fetch the existing run.
         # https://github.com/dagster-io/dagster/issues/2412
 
-        pipeline_run = self._construct_run_with_snapshots(
+        run = self._construct_run_with_snapshots(
             pipeline_name=pipeline_name,
             run_id=run_id,
             run_config=run_config,
@@ -1447,31 +1447,31 @@ class DagsterInstance(DynamicPartitionsStore):
         )
 
         def get_run():
-            candidate_run = self.get_run_by_id(pipeline_run.run_id)
+            candidate_run = self.get_run_by_id(run.run_id)
 
-            field_diff = _check_run_equality(pipeline_run, candidate_run)
+            field_diff = _check_run_equality(run, candidate_run)
 
             if field_diff:
                 raise DagsterRunConflict(
                     "Found conflicting existing run with same id {run_id}. Runs differ in:"
                     "\n{field_diff}".format(
-                        run_id=pipeline_run.run_id,
+                        run_id=run.run_id,
                         field_diff=_format_field_diff(field_diff),
                     ),
                 )
             return candidate_run
 
-        if self.has_run(pipeline_run.run_id):
+        if self.has_run(run.run_id):
             return get_run()
 
         try:
-            return self._run_storage.add_run(pipeline_run)
+            return self._run_storage.add_run(run)
         except DagsterRunAlreadyExists:
             return get_run()
 
     @traced
-    def add_run(self, pipeline_run: DagsterRun) -> DagsterRun:
-        return self._run_storage.add_run(pipeline_run)
+    def add_run(self, run: DagsterRun) -> DagsterRun:
+        return self._run_storage.add_run(run)
 
     @traced
     def add_snapshot(self, snapshot, snapshot_id=None):
@@ -1794,7 +1794,7 @@ class DagsterInstance(DynamicPartitionsStore):
     def report_engine_event(
         self,
         message,
-        pipeline_run=None,
+        run=None,
         engine_event_data=None,
         cls=None,
         step_key=None,
@@ -1808,17 +1808,17 @@ class DagsterInstance(DynamicPartitionsStore):
 
         check.opt_class_param(cls, "cls")
         check.str_param(message, "message")
-        check.opt_inst_param(pipeline_run, "pipeline_run", DagsterRun)
+        check.opt_inst_param(run, "run", DagsterRun)
         check.opt_str_param(run_id, "run_id")
         check.opt_str_param(pipeline_name, "pipeline_name")
 
         check.invariant(
-            pipeline_run or (pipeline_name and run_id),
-            "Must include either pipeline_run or pipeline_name and run_id",
+            run or (pipeline_name and run_id),
+            "Must include either run or pipeline_name and run_id",
         )
 
-        run_id = run_id if run_id else pipeline_run.run_id
-        pipeline_name = pipeline_name if pipeline_name else pipeline_run.pipeline_name
+        run_id = run_id if run_id else run.run_id
+        pipeline_name = pipeline_name if pipeline_name else run.pipeline_name
 
         engine_event_data = check.opt_inst_param(
             engine_event_data,
@@ -1885,12 +1885,12 @@ class DagsterInstance(DynamicPartitionsStore):
 
     def report_run_canceled(
         self,
-        pipeline_run,
+        run,
         message=None,
     ):
         from dagster._core.events import DagsterEvent, DagsterEventType
 
-        check.inst_param(pipeline_run, "pipeline_run", DagsterRun)
+        check.inst_param(run, "run", DagsterRun)
 
         message = check.opt_str_param(
             message,
@@ -1900,18 +1900,16 @@ class DagsterInstance(DynamicPartitionsStore):
 
         dagster_event = DagsterEvent(
             event_type_value=DagsterEventType.PIPELINE_CANCELED.value,
-            pipeline_name=pipeline_run.pipeline_name,
+            pipeline_name=run.pipeline_name,
             message=message,
         )
-        self.report_dagster_event(
-            dagster_event, run_id=pipeline_run.run_id, log_level=logging.ERROR
-        )
+        self.report_dagster_event(dagster_event, run_id=run.run_id, log_level=logging.ERROR)
         return dagster_event
 
-    def report_run_failed(self, pipeline_run, message=None):
+    def report_run_failed(self, run, message=None):
         from dagster._core.events import DagsterEvent, DagsterEventType
 
-        check.inst_param(pipeline_run, "pipeline_run", DagsterRun)
+        check.inst_param(run, "run", DagsterRun)
 
         message = check.opt_str_param(
             message,
@@ -1921,12 +1919,10 @@ class DagsterInstance(DynamicPartitionsStore):
 
         dagster_event = DagsterEvent(
             event_type_value=DagsterEventType.PIPELINE_FAILURE.value,
-            pipeline_name=pipeline_run.pipeline_name,
+            pipeline_name=run.pipeline_name,
             message=message,
         )
-        self.report_dagster_event(
-            dagster_event, run_id=pipeline_run.run_id, log_level=logging.ERROR
-        )
+        self.report_dagster_event(dagster_event, run_id=run.run_id, log_level=logging.ERROR)
         return dagster_event
 
     # directories
