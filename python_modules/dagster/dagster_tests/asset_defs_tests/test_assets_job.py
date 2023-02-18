@@ -34,7 +34,7 @@ from dagster import (
 from dagster._config import StringSource
 from dagster._core.definitions import AssetGroup, AssetIn, SourceAsset, asset, build_assets_job
 from dagster._core.definitions.assets_job import get_base_asset_jobs
-from dagster._core.definitions.dependency import NodeHandle
+from dagster._core.definitions.dependency import NodeHandle, NodeInvocation
 from dagster._core.definitions.executor_definition import in_process_executor
 from dagster._core.errors import DagsterInvalidSubsetError
 from dagster._core.execution.api import execute_pipeline, execute_run_iterator
@@ -99,8 +99,8 @@ def test_two_asset_pipeline():
     job = build_assets_job("a", [asset1, asset2])
     assert job.graph.node_defs == [asset1.op, asset2.op]
     assert job.dependencies == {
-        "asset1": {},
-        "asset2": {"asset1": DependencyDefinition("asset1", "result")},
+        NodeInvocation("asset1"): {},
+        NodeInvocation("asset2"): {"asset1": DependencyDefinition("asset1", "result")},
     }
     assert job.execute_in_process().success
 
@@ -133,9 +133,9 @@ def test_fork():
     job = build_assets_job("a", [asset1, asset2, asset3])
     assert job.graph.node_defs == [asset1.op, asset2.op, asset3.op]
     assert job.dependencies == {
-        "asset1": {},
-        "asset2": {"asset1": DependencyDefinition("asset1", "result")},
-        "asset3": {"asset1": DependencyDefinition("asset1", "result")},
+        NodeInvocation("asset1"): {},
+        NodeInvocation("asset2"): {"asset1": DependencyDefinition("asset1", "result")},
+        NodeInvocation("asset3"): {"asset1": DependencyDefinition("asset1", "result")},
     }
     assert job.execute_in_process().success
 
@@ -157,9 +157,9 @@ def test_join():
     job = build_assets_job("a", [asset1, asset2, asset3])
     assert job.graph.node_defs == [asset1.op, asset2.op, asset3.op]
     assert job.dependencies == {
-        "asset1": {},
-        "asset2": {},
-        "asset3": {
+        NodeInvocation("asset1"): {},
+        NodeInvocation("asset2"): {},
+        NodeInvocation("asset3"): {
             "asset1": DependencyDefinition("asset1", "result"),
             "asset2": DependencyDefinition("asset2", "result"),
         },
