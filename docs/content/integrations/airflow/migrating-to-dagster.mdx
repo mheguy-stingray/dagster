@@ -55,18 +55,18 @@ Even in the case that requires some infrastructure investment, `dagster-airflow`
 
 ---
 
-## Deciding on persistant vs ephemeral airflow database
+## Deciding on persistent vs ephemeral airflow database
 
-The dagster airflow migration tooling supports two methods for persisting airflow metadatabase state. By default it will us an ephemeral database that is scoped to every job run and thrown away as soon a job run terminates. You can also configure a persistant database that will be shared by all job runs. This tutorial uses the ephemeral database but you will want to use the persistant database option if you need the following features:
+The dagster airflow migration tooling supports two methods for persisting airflow metadatabase state. By default it will us an ephemeral database that is scoped to every job run and thrown away as soon a job run terminates. You can also configure a persistent database that will be shared by all job runs. This tutorial uses the ephemeral database but you will want to use the persistent database option if you need the following features:
 
 - `retry-from-failure` support in Dagster
 - passing airflow state between dag runs (ie xcoms)
 - `SubDAGOperators`
 - Airflow Pools
 
-If you have complex airflow DAGs you will likely want to have a persistant database when making your migration.
+If you have complex airflow DAGs you will likely want to have a persistent database when making your migration.
 
-You can configure your persistant airflow database by providing an `airflow_db` to the resource_defs param of the dagster-airflow api's.
+You can configure your persistent airflow database by providing an `airflow_db` to the resource_defs param of the dagster-airflow api's.
 
 ```python
 from dagster_airflow import (
