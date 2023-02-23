@@ -122,8 +122,8 @@ from dagster._core.definitions.composition import PendingNodeInvocation as Pendi
 from dagster._core.definitions.config import ConfigMapping as ConfigMapping
 from dagster._core.definitions.configurable import configured as configured
 from dagster._core.definitions.data_version import (
+    DataProvenance as DataProvenance,
     DataVersion as DataVersion,
-    LogicalVersionProvenance as LogicalVersionProvenance,
 )
 from dagster._core.definitions.decorators.asset_decorator import (
     asset as asset,
@@ -569,6 +569,7 @@ _DEPRECATED: Final[Mapping[str, TypingTuple[str, str, str]]] = {
 # "EventMetadataEntry": (MetadataEntry, "1.0.0"),
 _DEPRECATED_RENAMED: Final[Mapping[str, TypingTuple[Callable, str]]] = {
     "LogicalVersion": (DataVersion, "1.2.0"),
+    "LogicalVersionProvenance": (DataProvenance, "1.2.0"),
 }
 
 
