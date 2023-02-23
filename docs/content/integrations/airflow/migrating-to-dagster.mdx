@@ -64,7 +64,7 @@ The dagster airflow migration tooling supports two methods for persisting airflo
 - `SubDAGOperators`
 - Airflow Pools
 
-If you have complex airflow DAGs you will likely want to have a persistent database when making your migration.
+If you have complex airflow DAGs (cross-dag state sharing, pools) or the ability to retry-from-failure you will need to have a persistent database when making your migration.
 
 You can configure your persistent airflow database by providing an `airflow_db` to the resource_defs param of the dagster-airflow api's.
 
