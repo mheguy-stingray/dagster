@@ -18,6 +18,7 @@ from dagster import (
     _check as check,
 )
 from dagster._core.events import EngineEventData, MetadataEntry
+from dagster._core.instance import T_DagsterInstance
 from dagster._core.launcher.base import (
     CheckRunHealthResult,
     LaunchRunContext,
@@ -54,7 +55,7 @@ RUNNING_STATUSES = [
 STOPPED_STATUSES = ["STOPPED"]
 
 
-class EcsRunLauncher(RunLauncher, ConfigurableClass):
+class EcsRunLauncher(RunLauncher[T_DagsterInstance], ConfigurableClass):
     """RunLauncher that starts a task in ECS for each Dagster job run."""
 
     def __init__(
