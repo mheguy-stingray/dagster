@@ -579,10 +579,10 @@ class LegacyScheduleStorage(ScheduleStorage, ConfigurableClass):
 
     @property
     def _instance(self) -> Optional["DagsterInstance"]:
-        return self._storage._instance  # pyright: disable=reportPrivateUsage
+        return self._storage._instance
 
     def register_instance(self, instance: "DagsterInstance") -> None:
-        if not self._storage._instance:  # pyright: disable=reportPrivateUsage
+        if not self._storage._instance:
             self._storage.register_instance(instance)
 
     def wipe(self) -> None:

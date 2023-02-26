@@ -85,7 +85,7 @@ class MultiPartitionKey(str):
             ),
         )
 
-        str_key.dimension_keys = dimension_keys
+        str_key.dimension_keys = dimension_keys  # type: ignore  # (??)
 
         return str_key
 
@@ -119,7 +119,7 @@ class PartitionDimensionDefinition(
             partitions_def=check.inst_param(partitions_def, "partitions_def", PartitionsDefinition),
         )
 
-    def __eq__(self, other):
+    def __eq__(self, other: object) -> bool:
         return (
             isinstance(other, PartitionDimensionDefinition)
             and self.name == other.name
