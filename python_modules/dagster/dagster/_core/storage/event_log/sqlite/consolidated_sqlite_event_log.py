@@ -2,9 +2,10 @@ import logging
 import os
 from collections import defaultdict
 from contextlib import contextmanager
-from typing import Optional
+from typing import Any, Optional
 
 from sqlalchemy.pool import NullPool
+from typing_extensions import Self
 from watchdog.events import PatternMatchingEventHandler
 from watchdog.observers import Observer
 
@@ -71,8 +72,8 @@ class ConsolidatedSqliteEventLogStorage(SqlEventLogStorage, ConfigurableClass):
     def config_type(cls):
         return {"base_dir": StringSource}
 
-    @staticmethod
-    def from_config_value(inst_data, config_value):
+    @classmethod
+    def from_config_value(cls, inst_data: ConfigurableClassData, config_value: Any) -> Self:
         return ConsolidatedSqliteEventLogStorage(inst_data=inst_data, **config_value)
 
     def _init_db(self):

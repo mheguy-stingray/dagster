@@ -1,6 +1,8 @@
 import importlib
 from abc import ABC, abstractmethod
-from typing import Any, Dict, Mapping, NamedTuple, Type
+from typing import Any, Dict, Mapping, NamedTuple, Optional, Type, TypeVar, Union, overload
+
+from typing_extensions import Self
 
 import dagster._check as check
 from dagster._config.config_schema import UserConfigSchema
@@ -8,6 +10,9 @@ from dagster._utils import convert_dagster_submodule_name
 from dagster._utils.yaml_utils import load_run_config_yaml
 
 from .serdes import DefaultNamedTupleSerializer, WhitelistMap, whitelist_for_serdes
+
+T_ConfigurableClass = TypeVar("T_ConfigurableClass")
+# T_ConfigurableClass = TypeVar("T_ConfigurableClass", bound="ConfigurableClass")
 
 
 class ConfigurableClassDataSerializer(DefaultNamedTupleSerializer["ConfigurableClassData"]):
@@ -62,7 +67,17 @@ class ConfigurableClassData(
             "config": self.config_dict,
         }
 
-    def rehydrate(self) -> object:
+    @overload
+    def rehydrate(self, as_type: Type[T_ConfigurableClass]) -> T_ConfigurableClass:
+        ...
+
+    @overload
+    def rehydrate(self, as_type: None = ...) -> "ConfigurableClass":
+        ...
+
+    def rehydrate(
+        self, as_type: Optional[Type[T_ConfigurableClass]] = None
+    ) -> Union["ConfigurableClass", T_ConfigurableClass]:
         from dagster._config import process_config, resolve_to_config_type
         from dagster._core.errors import DagsterInvalidConfigError
 
@@ -81,7 +96,7 @@ class ConfigurableClassData(
                 f"configurable class {self.module_name}.{self.class_name}"
             )
 
-        if not issubclass(klass, ConfigurableClass):
+        if not issubclass(klass, as_type or ConfigurableClass):
             raise check.CheckError(
                 klass,
                 f"class {self.class_name} in module {self.module_name}",
@@ -131,7 +146,7 @@ class ConfigurableClass(ABC):
 
     @property
     @abstractmethod
-    def inst_data(self) -> Any:
+    def inst_data(self) -> Optional[ConfigurableClassData]:
         """
         Subclass must be able to return the inst_data as a property if it has been constructed
         through the from_config_value code path.
@@ -143,11 +158,10 @@ class ConfigurableClass(ABC):
         """dagster.ConfigType: The config type against which to validate a config yaml fragment
         serialized in an instance of ``ConfigurableClassData``.
         """
-        raise NotImplementedError(f"{cls.__name__} must implement the config_type classmethod")
 
-    @staticmethod
+    @classmethod
     @abstractmethod
-    def from_config_value(inst_data: Any, config_value: Any) -> object:
+    def from_config_value(cls, inst_data: ConfigurableClassData, config_value: Any) -> Self:
         """New up an instance of the ConfigurableClass from a validated config value.
 
         Called by ConfigurableClassData.rehydrate.
@@ -163,14 +177,11 @@ class ConfigurableClass(ABC):
 
         .. code-block:: python
 
-            @staticmethod
-            def from_config_value(inst_data, config_value):
+            @classmethod
+            def from_config_value(cls, inst_data, config_value):
                 return MyConfigurableClass(inst_data=inst_data, **config_value)
 
         """
-        raise NotImplementedError(
-            "ConfigurableClass subclasses must implement the from_config_value staticmethod"
-        )
 
 
 def class_from_code_pointer(module_name: str, class_name: str) -> Type[object]:

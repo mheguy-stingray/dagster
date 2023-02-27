@@ -27,7 +27,9 @@ from dagster._core.launcher.base import (
 from dagster._core.storage.pipeline_run import DagsterRun
 from dagster._grpc.types import ExecuteRunArgs
 from dagster._serdes import ConfigurableClass
+from dagster._serdes.config_class import ConfigurableClassData
 from dagster._utils.backoff import backoff
+from typing_extensions import Self
 
 from ..secretsmanager import get_secrets_from_arns
 from .container_context import SHARED_ECS_SCHEMA, EcsContainerContext
@@ -306,8 +308,8 @@ class EcsRunLauncher(RunLauncher, ConfigurableClass):
             **SHARED_ECS_SCHEMA,
         }
 
-    @staticmethod
-    def from_config_value(inst_data, config_value):
+    @classmethod
+    def from_config_value(cls, inst_data: ConfigurableClassData, config_value: Any) -> Self:
         return EcsRunLauncher(inst_data=inst_data, **config_value)
 
     def _set_run_tags(self, run_id: str, cluster: str, task_arn: str):

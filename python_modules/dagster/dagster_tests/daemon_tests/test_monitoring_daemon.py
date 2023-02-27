@@ -1,10 +1,9 @@
 # pylint: disable=redefined-outer-name
-
 import logging
 import os
 import time
 from logging import Logger
-from typing import cast
+from typing import Any, cast
 
 import pytest
 from dagster._core.events import DagsterEvent, DagsterEventType
@@ -23,6 +22,8 @@ from dagster._core.workspace.load_target import EmptyWorkspaceTarget
 from dagster._daemon import get_default_daemon_logger
 from dagster._daemon.monitoring.monitoring_daemon import monitor_started_run, monitor_starting_run
 from dagster._serdes import ConfigurableClass
+from dagster._serdes.config_class import ConfigurableClassData
+from typing_extensions import Self
 
 
 class TestRunLauncher(RunLauncher, ConfigurableClass):
@@ -40,8 +41,8 @@ class TestRunLauncher(RunLauncher, ConfigurableClass):
     def config_type(cls):
         return {}
 
-    @staticmethod
-    def from_config_value(inst_data, config_value):
+    @classmethod
+    def from_config_value(cls, inst_data: ConfigurableClassData, config_value: Any) -> Self:
         return TestRunLauncher(inst_data=inst_data)
 
     def launch_run(self, context):

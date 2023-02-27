@@ -1,12 +1,14 @@
 import logging
 import os
-from typing import Dict, Optional
+from typing import Any, Dict, Optional
 
 from dotenv import dotenv_values
+from typing_extensions import Self
 
 import dagster._check as check
 from dagster._config import Field, StringSource
 from dagster._serdes import ConfigurableClass
+from dagster._serdes.config_class import ConfigurableClassData
 
 from .loader import SecretsLoader
 
@@ -50,6 +52,6 @@ class EnvFileLoader(SecretsLoader, ConfigurableClass):
     def config_type(cls):
         return {"base_dir": Field(StringSource, is_required=False)}
 
-    @staticmethod
-    def from_config_value(inst_data, config_value):
+    @classmethod
+    def from_config_value(cls, inst_data: ConfigurableClassData, config_value: Any) -> Self:
         return EnvFileLoader(inst_data=inst_data, **config_value)

@@ -1,7 +1,12 @@
+from typing import Any
+
+from typing_extensions import Self
+
 import dagster._check as check
 from dagster._core.execution.api import execute_run
 from dagster._core.launcher import LaunchRunContext, RunLauncher
 from dagster._serdes import ConfigurableClass
+from dagster._serdes.config_class import ConfigurableClassData
 from dagster._utils.hosted_user_process import recon_pipeline_from_origin
 
 
@@ -26,8 +31,8 @@ class SyncInMemoryRunLauncher(RunLauncher, ConfigurableClass):
     def config_type(cls):
         return {}
 
-    @staticmethod
-    def from_config_value(inst_data, config_value):
+    @classmethod
+    def from_config_value(cls, inst_data: ConfigurableClassData, config_value: Any) -> Self:
         return SyncInMemoryRunLauncher(inst_data=inst_data)
 
     def launch_run(self, context: LaunchRunContext) -> None:

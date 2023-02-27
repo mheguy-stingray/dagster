@@ -49,9 +49,9 @@ class DagsterMySQLStorage(DagsterStorage, ConfigurableClass):
     def config_type(cls) -> UserConfigSchema:
         return mysql_config()
 
-    @staticmethod
+    @classmethod
     def from_config_value(
-        inst_data: Optional[ConfigurableClassData], config_value: MySqlStorageConfig
+        cls, inst_data: Optional[ConfigurableClassData], config_value: MySqlStorageConfig
     ) -> "DagsterMySQLStorage":
         return DagsterMySQLStorage(
             inst_data=inst_data,

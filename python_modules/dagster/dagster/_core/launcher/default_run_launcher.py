@@ -1,5 +1,7 @@
 import time
-from typing import cast
+from typing import Any, cast
+
+from typing_extensions import Self
 
 import dagster._seven as seven
 from dagster import (
@@ -14,6 +16,7 @@ from dagster._serdes import (
     ConfigurableClass,
     deserialize_value,
 )
+from dagster._serdes.config_class import ConfigurableClassData
 from dagster._utils.merger import merge_dicts
 
 from .base import LaunchRunContext, RunLauncher
@@ -46,8 +49,8 @@ class DefaultRunLauncher(RunLauncher, ConfigurableClass):
     def config_type(cls):
         return {"wait_for_processes": Field(Bool, is_required=False)}
 
-    @staticmethod
-    def from_config_value(inst_data, config_value):
+    @classmethod
+    def from_config_value(cls, inst_data: ConfigurableClassData, config_value: Any) -> Self:
         return DefaultRunLauncher(
             inst_data=inst_data, wait_for_processes=config_value.get("wait_for_processes", False)
         )
