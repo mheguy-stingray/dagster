@@ -3731,6 +3731,7 @@ export type WorkspaceLocationEntry = {
   __typename: 'WorkspaceLocationEntry';
   displayMetadata: Array<RepositoryMetadata>;
   id: Scalars['ID'];
+  image: Maybe<Scalars['String']>;
   loadStatus: RepositoryLocationLoadStatus;
   locationOrLoadError: Maybe<RepositoryLocationOrLoadError>;
   name: Scalars['String'];

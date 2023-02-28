@@ -35,6 +35,7 @@ query {
                   name
                   version
                 }
+                image
             }
             ... on PythonError {
               message
@@ -130,6 +131,8 @@ class TestLoadWorkspace(BaseTestSuite):
                 {"name": "dagster", "version": dagster_version},
                 {"name": "dagster-graphql", "version": dagster_graphql_version},
             ]
+
+            assert success_nodes[0]["image"] is None
 
             failures = [
                 node for node in nodes if node["locationOrLoadError"]["__typename"] == "PythonError"
