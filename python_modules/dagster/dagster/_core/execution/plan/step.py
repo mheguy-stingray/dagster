@@ -18,7 +18,7 @@ from typing_extensions import TypeGuard
 
 import dagster._check as check
 from dagster._core.definitions.utils import validate_tags
-from dagster._serdes.serdes import DefaultEnumSerializer, whitelist_for_serdes
+from dagster._serdes.serdes import EnumSerializer, whitelist_for_serdes
 from dagster._utils.merger import merge_dicts
 
 from .handle import ResolvedFromDynamicStepHandle, StepHandle, UnresolvedStepHandle
@@ -29,7 +29,7 @@ if TYPE_CHECKING:
     from dagster._core.definitions.dependency import NodeHandle
 
 
-class StepKindSerializer(DefaultEnumSerializer):
+class StepKindSerializer(EnumSerializer):
     @classmethod
     def value_from_storage_str(cls, storage_str: str, klass: Type) -> Enum:
         # old name for unresolved mapped

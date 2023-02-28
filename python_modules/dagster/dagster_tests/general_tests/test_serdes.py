@@ -2,22 +2,18 @@ import re
 import string
 from collections import namedtuple
 from enum import Enum
-from typing import NamedTuple, Set
+from typing import Any, NamedTuple, Optional, Set
 
 import pytest
 from dagster import _seven
 from dagster._check import ParameterCheckError, inst_param, set_param
 from dagster._serdes.errors import DeserializationError, SerdesUsageError, SerializationError
 from dagster._serdes.serdes import (
-    DefaultEnumSerializer,
-    DefaultNamedTupleSerializer,
     EnumSerializer,
+    NamedTupleSerializer,
     WhitelistMap,
     _whitelist_for_serdes,
     deserialize_value,
-    pack_value,
-    register_serdes_enum_fallbacks,
-    register_serdes_tuple_fallbacks,
     serialize_value,
     unpack_value,
 )
@@ -25,7 +21,7 @@ from dagster._serdes.utils import hash_str
 
 
 def test_deserialize_value_ok():
-    unpacked_tuple = deserialize_value('{"foo": "bar"}')
+    unpacked_tuple = deserialize_value('{"foo": "bar"}', as_type=dict)
     assert unpacked_tuple
     assert unpacked_tuple["foo"] == "bar"
 
@@ -70,87 +66,91 @@ def test_descent_path():
 def test_forward_compat_serdes_new_field_with_default():
     test_map = WhitelistMap.create()
 
+    # Separate scope since we redefine Quux
+    def get_orig_obj() -> Any:
+        @_whitelist_for_serdes(whitelist_map=test_map)
+        class Quux(NamedTuple("_Quux", [("foo", str), ("bar", str)])):
+            def __new__(cls, foo, bar):
+                return super(Quux, cls).__new__(cls, foo, bar)
+
+        assert test_map.has_tuple_entry("Quux")
+        serializer = test_map.get_tuple_entry("Quux")
+        assert serializer.klass is Quux
+        return Quux("zip", "zow")
+
+    orig = get_orig_obj()
+    serialized = serialize_value(orig, whitelist_map=test_map)
+
     @_whitelist_for_serdes(whitelist_map=test_map)
-    class Quux(namedtuple("_Quux", "foo bar")):  # type: ignore
-        def __new__(cls, foo, bar):
-            return super(Quux, cls).__new__(cls, foo, bar)
-
-    assert test_map.has_tuple_entry("Quux")
-    klass, _, _ = test_map.get_tuple_entry("Quux")
-    assert klass is Quux
-
-    quux = Quux("zip", "zow")
-
-    serialized = serialize_value(quux, whitelist_map=test_map)
-
-    @_whitelist_for_serdes(whitelist_map=test_map)
-    class Quux(namedtuple("_Quux", "foo bar baz")):
+    class Quux(NamedTuple("_Quux", [("foo", str), ("bar", str), ("baz", Optional[str])])):
         def __new__(cls, foo, bar, baz=None):
             return super(Quux, cls).__new__(cls, foo, bar, baz=baz)
 
     assert test_map.has_tuple_entry("Quux")
-    klass, _, _ = test_map.get_tuple_entry("Quux")
-    assert klass is Quux
+    serializer_v2 = test_map.get_tuple_entry("Quux")
+    assert serializer_v2.klass is Quux
 
-    deserialized = deserialize_value(serialized, whitelist_map=test_map)
+    deserialized = deserialize_value(serialized, as_type=Quux, whitelist_map=test_map)
 
-    assert deserialized != quux
-    assert deserialized.foo == quux.foo
-    assert deserialized.bar == quux.bar
+    assert deserialized != orig
+    assert deserialized.foo == orig.foo
+    assert deserialized.bar == orig.bar
     assert deserialized.baz is None
 
 
 def test_forward_compat_serdes_new_enum_field():
     test_map = WhitelistMap.create()
 
-    @_whitelist_for_serdes(whitelist_map=test_map)
-    class Corge(Enum):  # type: ignore
-        FOO = 1
-        BAR = 2
+    # Separate scope since we redefine Corge
+    def get_orig_obj() -> Any:
+        @_whitelist_for_serdes(whitelist_map=test_map)
+        class Corge(Enum):  # type: ignore
+            FOO = 1
+            BAR = 2
 
-    assert test_map.has_enum_entry("Corge")
+        assert test_map.has_enum_entry("Corge")
+        return Corge.FOO
 
-    corge = Corge.FOO
+    corge = get_orig_obj()
+    serialized = serialize_value(corge, whitelist_map=test_map)
 
-    packed = pack_value(corge, whitelist_map=test_map, descent_path="")
-
-    # pylint: disable=function-redefined
     @_whitelist_for_serdes(whitelist_map=test_map)
     class Corge(Enum):
         FOO = 1
         BAR = 2
         BAZ = 3
 
-    unpacked = unpack_value(packed, whitelist_map=test_map, descent_path="")
+    deserialized = deserialize_value(serialized, as_type=Corge, whitelist_map=test_map)
 
-    assert unpacked != corge
-    assert unpacked.name == corge.name
-    assert unpacked.value == corge.value
+    assert deserialized != corge
+    assert deserialized.name == corge.name
+    assert deserialized.value == corge.value
 
 
 def test_serdes_enum_backcompat():
     test_map = WhitelistMap.create()
 
-    @_whitelist_for_serdes(whitelist_map=test_map)
-    class Corge(Enum):  # type: ignore
-        FOO = 1
-        BAR = 2
+    # Separate scope since we redefine Corge
+    def get_orig_obj() -> Any:
+        @_whitelist_for_serdes(whitelist_map=test_map)
+        class Corge(Enum):  # type: ignore
+            FOO = 1
+            BAR = 2
 
-    assert test_map.has_enum_entry("Corge")
+        assert test_map.has_enum_entry("Corge")
+        return Corge.FOO
 
-    corge = Corge.FOO
+    corge = get_orig_obj()
+    serialized = serialize_value(corge, whitelist_map=test_map)
 
-    packed = pack_value(corge, whitelist_map=test_map, descent_path="")
-
-    class CorgeBackCompatSerializer(DefaultEnumSerializer):
-        @classmethod
-        def value_from_storage_str(cls, storage_str, klass):
-            if storage_str == "FOO":
+    class CorgeBackCompatSerializer(EnumSerializer):
+        def unpack(self, value):
+            if value == "FOO":
                 value = "FOO_FOO"
             else:
-                value = storage_str
+                value = value
 
-            return super().value_from_storage_str(value, klass)
+            return super().unpack(value)
 
     # pylint: disable=function-redefined
     @_whitelist_for_serdes(whitelist_map=test_map, serializer=CorgeBackCompatSerializer)
@@ -159,31 +159,33 @@ def test_serdes_enum_backcompat():
         BAZ = 3
         FOO_FOO = 4
 
-    unpacked = unpack_value(packed, whitelist_map=test_map, descent_path="")
+    deserialized = deserialize_value(serialized, whitelist_map=test_map)
 
-    assert unpacked != corge
-    assert unpacked == Corge.FOO_FOO
+    assert deserialized != corge
+    assert deserialized == Corge.FOO_FOO
 
 
 def test_backward_compat_serdes():
     test_map = WhitelistMap.create()
 
-    @_whitelist_for_serdes(whitelist_map=test_map)
-    class Quux(namedtuple("_Quux", "foo bar baz")):  # type: ignore
-        def __new__(cls, foo, bar, baz):
-            return super(Quux, cls).__new__(cls, foo, bar, baz)
+    # Separate scope since we redefine Quux
+    def get_orig_obj() -> Any:
+        @_whitelist_for_serdes(whitelist_map=test_map)
+        class Quux(namedtuple("_Quux", "foo bar baz")):
+            def __new__(cls, foo, bar, baz):
+                return super(Quux, cls).__new__(cls, foo, bar, baz)
 
-    quux = Quux("zip", "zow", "whoopie")
+        return Quux("zip", "zow", "whoopie")
 
+    quux = get_orig_obj()
     serialized = serialize_value(quux, whitelist_map=test_map)
 
-    # pylint: disable=function-redefined
     @_whitelist_for_serdes(whitelist_map=test_map)
-    class Quux(namedtuple("_Quux", "foo bar")):  # pylint: disable=bad-super-call
+    class Quux(namedtuple("_Quux", "foo bar")):
         def __new__(cls, foo, bar):
             return super(Quux, cls).__new__(cls, foo, bar)
 
-    deserialized = deserialize_value(serialized, whitelist_map=test_map)
+    deserialized = deserialize_value(serialized, as_type=Quux, whitelist_map=test_map)
 
     assert deserialized != quux
     assert deserialized.foo == quux.foo
@@ -194,17 +196,22 @@ def test_backward_compat_serdes():
 def test_forward_compat():
     old_map = WhitelistMap.create()
 
-    @_whitelist_for_serdes(whitelist_map=old_map)
-    class Quux(namedtuple("_Quux", "bar baz")):  # type: ignore
-        def __new__(cls, bar, baz):
-            return super().__new__(cls, bar, baz)
+    # Separate scope since we redefine Quux
+    def register_orig() -> Any:
+        @_whitelist_for_serdes(whitelist_map=old_map)
+        class Quux(namedtuple("_Quux", "bar baz")):  # type: ignore
+            def __new__(cls, bar, baz):
+                return super().__new__(cls, bar, baz)
+
+        return Quux
+
+    orig_klass = register_orig()
 
     # new version has a new field with a new type
     new_map = WhitelistMap.create()
 
-    # pylint: disable=function-redefined
     @_whitelist_for_serdes(whitelist_map=new_map)
-    class Quux(namedtuple("_Quux", "foo bar baz")):  # noqa: F811
+    class Quux(namedtuple("_Quux", "foo bar baz")):
         def __new__(cls, foo, bar, baz):
             return super().__new__(cls, foo, bar, baz)
 
@@ -219,7 +226,7 @@ def test_forward_compat():
     serialized = serialize_value(new_quux, whitelist_map=new_map)
 
     # read from old, foo ignored
-    deserialized = deserialize_value(serialized, whitelist_map=old_map)
+    deserialized = deserialize_value(serialized, as_type=orig_klass, whitelist_map=old_map)
     assert deserialized.bar == "bar"
     assert deserialized.baz == "baz"
 
@@ -399,13 +406,18 @@ def test_from_storage_dict():
     # pylint: disable=function-redefined
     old_map = WhitelistMap.create()
 
-    @_whitelist_for_serdes(whitelist_map=old_map)
-    class MyThing(NamedTuple):  # type: ignore
-        orig_name: str
+    # Separate scope since we redefine MyThing
+    def get_orig_value() -> Any:
+        @_whitelist_for_serdes(whitelist_map=old_map)
+        class MyThing(NamedTuple):  # type: ignore
+            orig_name: str
 
-    serialized_old = serialize_value(MyThing("old"), whitelist_map=old_map)
+        return MyThing("old")
 
-    class CompatSerializer(DefaultNamedTupleSerializer):
+    my_thing = get_orig_value()
+    serialized_old = serialize_value(my_thing, whitelist_map=old_map)
+
+    class CompatSerializer(NamedTupleSerializer):
         @classmethod
         def value_from_storage_dict(
             cls, storage_dict, klass, args_for_class, whitelist_map, descent_path

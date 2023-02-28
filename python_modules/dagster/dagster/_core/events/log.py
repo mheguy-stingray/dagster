@@ -7,10 +7,8 @@ from dagster._core.errors import DagsterInvariantViolationError
 from dagster._core.events import DagsterEvent, DagsterEventType
 from dagster._core.utils import coerce_valid_log_level
 from dagster._serdes.serdes import (
-    DefaultNamedTupleSerializer,
-    WhitelistMap,
+    NamedTupleSerializer,
     deserialize_value,
-    register_serdes_tuple_fallbacks,
     serialize_value,
     whitelist_for_serdes,
 )
@@ -23,21 +21,25 @@ from dagster._utils.log import (
 )
 
 
-class EventLogEntrySerializer(DefaultNamedTupleSerializer):
-    @classmethod
-    def value_to_storage_dict(
-        cls,
-        value: NamedTuple,
-        whitelist_map: WhitelistMap,
-        descent_path: str,
+class EventLogEntrySerializer(NamedTupleSerializer["EventLogEntry"]):
+    def after_pack(
+        self,
+        **packed: Any,
     ) -> Dict[str, Any]:
-        storage_dict = super().value_to_storage_dict(value, whitelist_map, descent_path)
-        # include an empty string for the message field to allow older versions of dagster to load the events
-        storage_dict["message"] = ""
-        return storage_dict
+        # include an empty string for the message field to allow older versions of dagster to load
+        # the events
+        packed["message"] = ""
+        return packed
 
 
-@whitelist_for_serdes(serializer=EventLogEntrySerializer)
+@whitelist_for_serdes(
+    serializer=EventLogEntrySerializer,
+    # These were originally distinguished from each other but ended up being empty subclasses
+    # of EventLogEntry -- instead of using the subclasses we were relying on
+    # EventLogEntry.is_dagster_event to distinguish events that originate in the logging
+    # machinery from events that are yielded by user code
+    old_storage_names={"DagsterEventRecord", "LogMessageRecord", "EventRecord"},
+)
 class EventLogEntry(
     NamedTuple(
         "_EventLogEntry",
@@ -237,17 +239,3 @@ def construct_json_event_logger(json_path):
             ),
         ),
     )
-
-
-register_serdes_tuple_fallbacks(
-    {
-        # These were originally distinguished from each other but ended up being empty subclasses
-        # of EventLogEntry -- instead of using the subclasses we were relying on
-        # EventLogEntry.is_dagster_event to distinguish events that originate in the logging
-        # machinery from events that are yielded by user code
-        "DagsterEventRecord": EventLogEntry,
-        "LogMessageRecord": EventLogEntry,
-        # renamed EventRecord -> EventLogEntry
-        "EventRecord": EventLogEntry,
-    }
-)

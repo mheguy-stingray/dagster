@@ -61,7 +61,7 @@ from dagster._core.definitions.utils import DEFAULT_GROUP_NAME
 from dagster._core.errors import DagsterInvalidDefinitionError
 from dagster._core.snap import PipelineSnapshot
 from dagster._core.snap.mode import ResourceDefSnap, build_resource_def_snap
-from dagster._serdes import DefaultNamedTupleSerializer, whitelist_for_serdes
+from dagster._serdes import whitelist_for_serdes
 from dagster._utils.error import SerializableErrorInfo
 
 
@@ -317,13 +317,7 @@ class ExternalPresetData(
         )
 
 
-class ExternalScheduleDataSerializer(DefaultNamedTupleSerializer):
-    @classmethod
-    def skip_when_empty(cls) -> Set[str]:
-        return {"default_status"}  # Maintain stable snapshot ID for back-compat purposes
-
-
-@whitelist_for_serdes(serializer=ExternalScheduleDataSerializer)
+@whitelist_for_serdes(skip_when_empty_fields={"default_status"})
 class ExternalScheduleData(
     NamedTuple(
         "_ExternalScheduleData",
@@ -420,16 +414,7 @@ class ExternalSensorMetadata(
         )
 
 
-class ExternalSensorDataSerializer(DefaultNamedTupleSerializer):
-    @classmethod
-    def skip_when_empty(cls) -> Set[str]:
-        return {
-            "default_status",
-            "sensor_type",
-        }  # Maintain stable snapshot ID for back-compat purposes
-
-
-@whitelist_for_serdes(serializer=ExternalSensorDataSerializer)
+@whitelist_for_serdes(skip_when_empty_fields={"default_status", "sensor_type"})
 class ExternalSensorData(
     NamedTuple(
         "_ExternalSensorData",
