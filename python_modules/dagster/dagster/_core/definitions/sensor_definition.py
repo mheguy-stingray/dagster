@@ -471,7 +471,7 @@ class SensorDefinition:
             context_param = {context_param_name: context}
 
         else:
-            # We still take a context arg even if the underlying function doesn't require it
+            # We still optionally take a context arg even if the underlying function doesn't require it
             # this is so that we can pass resources if the sensor needs any
             context: Optional[SensorEvaluationContext] = None
             if args:
