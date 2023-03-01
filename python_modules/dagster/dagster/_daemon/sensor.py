@@ -13,6 +13,7 @@ import pendulum
 
 import dagster._check as check
 import dagster._seven as seven
+from dagster._core.definitions.mode import DEFAULT_MODE_NAME
 from dagster._core.definitions.run_request import InstigatorType, RunRequest
 from dagster._core.definitions.selector import PipelineSelector
 from dagster._core.definitions.sensor_definition import DefaultSensorStatus, SensorExecutionData
@@ -638,8 +639,12 @@ def _evaluate_sensor(
                     asset_selection=stale_assets, stale_assets_only=False
                 )
 
-        target_data: ExternalTargetData = check.not_none(
-            external_sensor.get_target_data(run_request.job_name)
+        target_data: Optional[ExternalTargetData] = external_sensor.get_target_data(
+            run_request.job_name
+        ) or ExternalTargetData(
+            pipeline_name=check.not_none(run_request.job_name),
+            mode=DEFAULT_MODE_NAME,
+            solid_selection=None,
         )
 
         pipeline_selector = PipelineSelector(

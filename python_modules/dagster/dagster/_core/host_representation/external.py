@@ -737,7 +737,7 @@ class ExternalSensor:
 
     def get_target_data(self, pipeline_name: Optional[str] = None) -> Optional[ExternalTargetData]:
         if pipeline_name:
-            return self._external_sensor_data.target_dict[pipeline_name]
+            return self._external_sensor_data.target_dict.get(pipeline_name)
         else:
             return self._get_single_target()
 
