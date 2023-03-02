@@ -1832,10 +1832,8 @@ class SqlEventLogStorage(EventLogStorage):
             DynamicPartitionsTable.c.partitions_def_name,
             DynamicPartitionsTable.c.partition,
         ]
-        query = (
-            db.select(columns)
-            .where(DynamicPartitionsTable.c.partitions_def_name == partitions_def_name)
-            .order_by(DynamicPartitionsTable.c.id)
+        query = db.select(columns).where(
+            DynamicPartitionsTable.c.partitions_def_name == partitions_def_name
         )
         with self.index_connection() as conn:
             rows = conn.execute(query).fetchall()
@@ -1864,12 +1862,7 @@ class SqlEventLogStorage(EventLogStorage):
                     )
                 )
             ).fetchall()
-            existing_keys = set([row[0] for row in existing_rows])
-            new_keys = [
-                partition_key
-                for partition_key in partition_keys
-                if partition_key not in existing_keys
-            ]
+            new_keys = set(partition_keys) - set([row[0] for row in existing_rows])
 
             if new_keys:
                 conn.execute(
