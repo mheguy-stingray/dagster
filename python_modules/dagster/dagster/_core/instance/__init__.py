@@ -1745,7 +1745,15 @@ class DagsterInstance(DynamicPartitionsStore):
         check.str_param(partitions_def_name, "partitions_def_name")
 
         partitions = self._event_storage.get_dynamic_partitions(partitions_def_name)
-        log_action(self, DYNAMIC_PARTITIONS_FETCHED, metadata={"num_partitions": len(partitions)})
+
+        kvs_key = "get_dynamic_partitions_called"
+        get_dynamic_partitions_called = int(self.run_storage.kvs_get({kvs_key}).get(kvs_key, "0"))
+        if get_dynamic_partitions_called % 10 == 0:
+            log_action(
+                self, DYNAMIC_PARTITIONS_FETCHED, metadata={"num_partitions": len(partitions)}
+            )
+        self.run_storage.kvs_set({kvs_key: str(get_dynamic_partitions_called + 1)})
+
         return partitions
 
     @traced
