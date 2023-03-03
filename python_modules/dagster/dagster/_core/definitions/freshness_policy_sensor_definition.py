@@ -7,7 +7,7 @@ from dagster._annotations import PublicAttr, experimental
 from dagster._core.definitions.asset_selection import AssetSelection
 from dagster._core.definitions.events import AssetKey
 from dagster._core.definitions.freshness_policy import FreshnessPolicy
-from dagster._core.definitions.resource_output import get_resource_args
+from dagster._core.definitions.resource_annotation import get_resource_args
 from dagster._core.definitions.scoped_resources_builder import Resources, ScopedResourcesBuilder
 from dagster._core.errors import (
     DagsterInvalidDefinitionError,
